@@ -1,364 +1,144 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Vasya Music</title>
-    <link rel="manifest" href="manifest.json">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: { sans:['Inter', 'sans-serif'] },
-                    colors: { appBase: '#000000', appAccent: '#3b82f6' }
-                }
-            }
-        }
-    </script>
+    <title>Vasya Ad-Free Music</title>
     <style>
-        ::-webkit-scrollbar { display: none; }
-        body { -ms-overflow-style: none; scrollbar-width: none; overscroll-behavior-y: none; -webkit-tap-highlight-color: transparent; }
-        .text-gradient {
-            background-clip: text;
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-image: linear-gradient(90deg, #60a5fa, #a78bfa);
+        :root { --bg: #000; --card: #1a1a1c; --accent: #3b82f6; }
+        body { margin: 0; font-family: -apple-system, system-ui, sans-serif; background: var(--bg); color: #fff; padding-bottom: 120px; }
+        
+        /* Layout */
+        header { padding: 40px 20px 20px; }
+        .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; padding: 20px; }
+        @media (min-width: 768px) { .grid { grid-template-columns: repeat(5, 1fr); } }
+
+        /* Search */
+        .search-box { padding: 0 20px; }
+        input { 
+            width: 100%; padding: 15px; border-radius: 12px; border: none; 
+            background: #222; color: #fff; font-size: 16px; outline: none;
         }
-        .glass-panel { background: rgba(24, 24, 27, 0.6); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.05); }
+
+        /* Cards */
+        .card { cursor: pointer; background: var(--card); border-radius: 15px; overflow: hidden; transition: 0.2s; }
+        .card:active { transform: scale(0.96); }
+        .card img { width: 100%; aspect-ratio: 1/1; object-fit: cover; }
+        .card-info { padding: 10px; }
+        .title { font-size: 14px; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .artist { font-size: 12px; color: #aaa; margin-top: 4px; }
+
+        /* Ad-Free Player */
+        .player {
+            position: fixed; bottom: 0; width: 100%; background: rgba(15,15,15,0.95);
+            backdrop-filter: blur(20px); border-top: 1px solid #333;
+            padding: 15px 20px; display: flex; align-items: center; box-sizing: border-box;
+            visibility: hidden; z-index: 1000;
+        }
+        .player.active { visibility: visible; }
+        .p-img { width: 50px; height: 50px; border-radius: 8px; margin-right: 15px; }
+        .p-info { flex: 1; min-width: 0; }
+        .p-btn { 
+            background: #fff; border: none; width: 45px; height: 45px; 
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+        }
+        .progress { position: absolute; top: 0; left: 0; height: 2px; background: var(--accent); width: 0%; }
     </style>
 </head>
-<body class="bg-appBase text-white font-sans antialiased relative min-h-screen pb-32 md:pb-24 flex flex-col">
+<body>
 
-    <div class="fixed top-[-10%] left-[-10%] w-[50vw] h-[50vw] rounded-full bg-blue-900/20 blur-[120px] pointer-events-none z-0"></div>
-    <div class="fixed top-[20%] right-[-10%] w-[40vw] h-[40vw] rounded-full bg-purple-900/10 blur-[100px] pointer-events-none z-0"></div>
+    <header>
+        <h1 style="margin:0; font-size: 32px;">Ad-Free Global</h1>
+        <p style="color:#777; margin: 5px 0 0;">YouTube Music without the garbage</p>
+    </header>
 
-    <!-- INVISIBLE YOUTUBE AUDIO ENGINE -->
-    <div id="yt-player-container" class="fixed top-0 left-0 w-1 h-1 opacity-0 pointer-events-none z-[-1]"></div>
-
-    <div class="flex h-full w-full relative z-10 max-w-[1600px] mx-auto flex-1">
-        <!-- DESKTOP SIDEBAR -->
-        <aside class="hidden md:flex flex-col w-64 h-screen sticky top-0 border-r border-white/5 bg-appBase/50 backdrop-blur-xl p-6">
-            <h1 class="text-2xl font-extrabold tracking-tighter text-gradient mb-10">Vasya Music</h1>
-            <nav class="space-y-4 flex-1">
-                <button onclick="nav('home')" class="w-full flex items-center gap-4 text-white font-semibold hover:text-blue-400 transition">
-                    <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M11.47 3.84a.75.75 0 011.06 0l8.69 8.69a.75.75 0 101.06-1.06l-8.689-8.69a2.25 2.25 0 00-3.182 0l-8.69 8.69a.75.75 0 001.061 1.06l8.69-8.69z"/><path d="M12 5.432l8.159 8.159c.03.03.06.058.091.086v6.198c0 1.035-.84 1.875-1.875 1.875H15a.75.75 0 01-.75-.75v-4.5a.75.75 0 00-.75-.75h-3a.75.75 0 00-.75.75V21a.75.75 0 01-.75.75H5.625a1.875 1.875 0 01-1.875-1.875v-6.198a2.29 2.29 0 00.091-.086L12 5.43z"/></svg>
-                    Home
-                </button>
-                <button onclick="nav('search')" class="w-full flex items-center gap-4 text-zinc-400 font-medium hover:text-blue-400 transition">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/></svg>
-                    Search
-                </button>
-                <button onclick="nav('library')" class="w-full flex items-center gap-4 text-zinc-400 font-medium hover:text-blue-400 transition">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 010 3.75H5.625a1.875 1.875 0 010-3.75z"/></svg>
-                    Library
-                </button>
-            </nav>
-        </aside>
-
-        <!-- MAIN SCROLLABLE CONTENT -->
-        <main class="flex-1 min-w-0 w-full relative">
-            <header class="md:hidden sticky top-0 z-30 px-5 pt-12 pb-4 glass-panel border-b-0 border-white/5 flex justify-between items-center">
-                <h1 class="text-2xl font-extrabold tracking-tighter text-gradient">Vasya Music</h1>
-            </header>
-
-            <div class="p-5 md:p-10">
-                <!-- HOME VIEW -->
-                <div id="view-home" class="view-section animate-fade-in">
-                    <h2 class="text-2xl md:text-3xl font-bold mb-6 tracking-tight text-white/90">Global Top Hits</h2>
-                    <div id="home-new-releases" class="flex gap-4 overflow-x-auto snap-x pb-6 -mx-5 px-5 md:mx-0 md:px-0 scroll-smooth">
-                        <div class="text-zinc-500 animate-pulse">Loading amazing music...</div>
-                    </div>
-
-                    <h2 class="text-2xl font-bold mt-8 mb-6 tracking-tight text-white/90">Jump Back In</h2>
-                    <div id="home-recent" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
-                        <div class="text-zinc-500">Play some songs to build your library.</div>
-                    </div>
-                </div>
-
-                <!-- SEARCH VIEW -->
-                <div id="view-search" class="view-section hidden animate-fade-in">
-                    <h2 class="text-2xl md:text-3xl font-bold mb-6 tracking-tight text-white/90">Search</h2>
-                    <div class="relative mb-8">
-                        <input type="text" id="search-input" placeholder="Search songs or artists..." class="w-full bg-zinc-900 border border-zinc-800 rounded-xl py-4 pl-12 pr-4 text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition shadow-lg text-lg">
-                        <svg class="w-6 h-6 absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/></svg>
-                    </div>
-                    <div id="search-results" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
-                </div>
-
-                <!-- LIBRARY VIEW -->
-                <div id="view-library" class="view-section hidden animate-fade-in">
-                    <h2 class="text-2xl md:text-3xl font-bold mb-6 tracking-tight text-white/90">Your Top Tracks</h2>
-                    <div id="library-top" class="flex flex-col gap-3">
-                        <div class="text-zinc-500">Your most played tracks will appear here.</div>
-                    </div>
-                </div>
-            </div>
-        </main>
+    <div class="search-box">
+        <input type="text" id="search-input" placeholder="Search global artists or songs...">
     </div>
 
-    <!-- FLOATING PLAYER -->
-    <div id="player-bar" class="hidden fixed bottom-[88px] md:bottom-8 left-4 right-4 md:left-1/2 md:-translate-x-1/2 md:w-[600px] glass-panel rounded-2xl p-2 md:p-3 flex items-center justify-between shadow-2xl z-40 transition-all duration-300">
-        <div class="flex items-center gap-3 overflow-hidden w-[60%] group">
-            <div class="relative w-12 h-12 md:w-14 md:h-14 shrink-0 rounded-lg overflow-hidden shadow-md bg-zinc-800">
-                <img id="player-img" src="" class="w-full h-full object-cover">
-            </div>
-            <div class="truncate">
-                <h4 id="player-title" class="text-sm md:text-base font-bold text-white truncate group-hover:text-blue-400 transition">Song Title</h4>
-                <p id="player-artist" class="text-xs md:text-sm text-zinc-400 truncate">Artist Name</p>
-            </div>
-        </div>
-
-        <div class="flex items-center gap-2 md:gap-4 pr-2">
-            <button onclick="togglePlay()" class="w-10 h-10 md:w-12 md:h-12 bg-white text-black rounded-full flex items-center justify-center hover:scale-105 active:scale-95 transition-transform shadow-lg">
-                <svg id="icon-play" class="w-5 h-5 ml-1 hidden" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-                <svg id="icon-pause" class="w-5 h-5 hidden" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
-                <svg id="icon-loading" class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-            </button>
-        </div>
-        
-        <div class="absolute bottom-0 left-4 right-4 h-[3px] bg-white/10 rounded-full overflow-hidden">
-            <div id="progress-bar" class="h-full bg-blue-500 w-0 rounded-full transition-all duration-100 ease-linear"></div>
-        </div>
+    <div id="results-grid" class="grid">
+        <div style="color: #555;">Loading trending...</div>
     </div>
 
-    <!-- MOBILE BOTTOM NAVIGATION -->
-    <nav class="md:hidden fixed bottom-0 left-0 w-full glass-panel border-t border-white/5 pb-safe z-30">
-        <div class="flex justify-around items-center h-[72px] px-2">
-            <button onclick="nav('home')" class="flex flex-col items-center justify-center w-full h-full gap-1 text-white hover:text-blue-400">
-                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M11.47 3.84a.75.75 0 011.06 0l8.69 8.69a.75.75 0 101.06-1.06l-8.689-8.69a2.25 2.25 0 00-3.182 0l-8.69 8.69a.75.75 0 001.061 1.06l8.69-8.69z"/><path d="M12 5.432l8.159 8.159c.03.03.06.058.091.086v6.198c0 1.035-.84 1.875-1.875 1.875H15a.75.75 0 01-.75-.75v-4.5a.75.75 0 00-.75-.75h-3a.75.75 0 00-.75.75V21a.75.75 0 01-.75.75H5.625a1.875 1.875 0 01-1.875-1.875v-6.198a2.29 2.29 0 00.091-.086L12 5.43z"/></svg>
-                <span class="text-[10px] font-semibold">Home</span>
-            </button>
-            <button onclick="nav('search')" class="flex flex-col items-center justify-center w-full h-full gap-1 text-zinc-400 hover:text-blue-400 transition">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/></svg>
-                <span class="text-[10px] font-semibold">Search</span>
-            </button>
-            <button onclick="nav('library')" class="flex flex-col items-center justify-center w-full h-full gap-1 text-zinc-400 hover:text-blue-400 transition">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 010 3.75H5.625a1.875 1.875 0 010-3.75z"/></svg>
-                <span class="text-[10px] font-semibold">Library</span>
-            </button>
+    <div id="player-bar" class="player">
+        <div id="progress" class="progress"></div>
+        <img id="p-img" class="p-img" src="">
+        <div class="p-info">
+            <div id="p-title" class="title">Song</div>
+            <div id="p-artist" class="artist">Artist</div>
         </div>
-    </nav>
+        <button class="p-btn" onclick="togglePlay()">
+            <svg id="p-icon" width="20" height="20" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+        </button>
+    </div>
 
-    <!-- LOAD YOUTUBE IFRAME API -->
-    <script src="https://www.youtube.com/iframe_api"></script>
+    <audio id="audio"></audio>
 
     <script>
-        // REPLACE THIS WITH YOUR NEW WORKER URL
-        const WORKER_URL = "https://vasya-music.kviappsgames.workers.dev";
-        
-        // --- YOUTUBE INVISIBLE PLAYER SETUP ---
-        let ytPlayer;
-        let isPlayerReady = false;
+        const WORKER_URL = "https://vasya-music.kviappsgames.workers.dev"; // UPDATE THIS
+        const audio = document.getElementById('audio');
+        const grid = document.getElementById('results-grid');
 
-        function onYouTubeIframeAPIReady() {
-            ytPlayer = new YT.Player('yt-player-container', {
-                height: '10', width: '10', videoId: '',
-                playerVars: { 'autoplay': 0, 'controls': 0, 'playsinline': 1 },
-                events: {
-                    'onReady': () => { isPlayerReady = true; },
-                    'onStateChange': onPlayerStateChange
-                }
-            });
+        async function loadHome() {
+            const res = await fetch(`${WORKER_URL}/api/home`);
+            const data = await res.json();
+            render(data);
         }
 
-        function onPlayerStateChange(event) {
-            if (event.data === YT.PlayerState.PLAYING) updatePlayerIcon('pause');
-            else if (event.data === YT.PlayerState.PAUSED) updatePlayerIcon('play');
-            else if (event.data === YT.PlayerState.ENDED) updatePlayerIcon('play');
+        function render(items) {
+            grid.innerHTML = items.map(item => `
+                <div class="card" onclick="playSong('${item.id}', '${item.title.replace(/'/g,"")}', '${item.artist.replace(/'/g,"")}', '${item.thumbnail}')">
+                    <img src="${item.thumbnail}">
+                    <div class="card-info">
+                        <div class="title">${item.title}</div>
+                        <div class="artist">${item.artist}</div>
+                    </div>
+                </div>
+            `).join('');
         }
 
-        // --- PROGRESS BAR UPDATER ---
-        setInterval(() => {
-            if (isPlayerReady && ytPlayer && ytPlayer.getPlayerState() === YT.PlayerState.PLAYING) {
-                const current = ytPlayer.getCurrentTime();
-                const duration = ytPlayer.getDuration();
-                if (duration) {
-                    const percent = (current / duration) * 100;
-                    document.getElementById('progress-bar').style.width = `${percent}%`;
-                }
-            }
-        }, 1000);
-
-        // --- UI NAVIGATION ---
-        function nav(viewId) {
-            document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
-            document.getElementById(`view-${viewId}`).classList.remove('hidden');
-            if(viewId === 'library' || viewId === 'home') loadDbStats();
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-
-        // --- LOAD HOME (TRENDING GLOBAL MUSIC) ---
-        async function loadHomeData() {
-            try {
-                const res = await fetch(`${WORKER_URL}/api/home`);
+        document.getElementById('search-input').onkeypress = async (e) => {
+            if (e.key === 'Enter') {
+                grid.innerHTML = '<div style="color:#555;">Searching global library...</div>';
+                const res = await fetch(`${WORKER_URL}/api/search?q=${encodeURIComponent(e.target.value)}`);
                 const data = await res.json();
-                
-                if(data.success && data.results) {
-                    const html = data.results.map(s => `
-                        <div class="snap-start shrink-0 w-40 md:w-56 group cursor-pointer" onclick="playSong('${s.id}', '${s.title.replace(/'/g, "\\'")}', '${s.artist.replace(/'/g, "\\'")}', '${s.img}')">
-                            <div class="relative w-full aspect-square rounded-2xl overflow-hidden mb-3 shadow-2xl border border-white/5 bg-zinc-800">
-                                <img src="${s.img}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
-                                <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
-                                    <div class="w-12 h-12 bg-blue-500 text-white rounded-full flex items-center justify-center shadow-lg transform translate-y-4 group-hover:translate-y-0 transition-all">
-                                        <svg class="w-6 h-6 ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-                                    </div>
-                                </div>
-                            </div>
-                            <h3 class="font-bold text-sm md:text-base text-white truncate">${s.title}</h3>
-                            <p class="text-xs md:text-sm text-zinc-400 font-medium truncate">${s.artist}</p>
-                        </div>`).join('');
-                    document.getElementById('home-new-releases').innerHTML = html;
-                }
-            } catch (e) {
-                document.getElementById('home-new-releases').innerHTML = '<span class="text-red-400">Failed to load trending music.</span>';
+                render(data);
             }
-        }
+        };
 
-        // --- SEARCH LOGIC (OFFICIAL ITUNES DATA) ---
-        const searchInput = document.getElementById('search-input');
-        let searchTimeout;
+        async function playSong(id, title, artist, thumb) {
+            document.getElementById('player-bar').classList.add('active');
+            document.getElementById('p-title').innerText = title;
+            document.getElementById('p-artist').innerText = artist;
+            document.getElementById('p-img').src = thumb;
 
-        searchInput.addEventListener('input', (e) => {
-            clearTimeout(searchTimeout);
-            searchTimeout = setTimeout(() => doSearch(e.target.value), 600);
-        });
-
-        async function doSearch(query) {
-            if(!query.trim()) return;
-            const resultsDiv = document.getElementById('search-results');
-            resultsDiv.innerHTML = '<div class="text-zinc-500 animate-pulse col-span-full">Searching global library...</div>';
+            // Fetch the ad-free direct stream
+            const res = await fetch(`${WORKER_URL}/api/stream?id=${id}`);
+            const data = await res.json();
             
-            try {
-                const res = await fetch(`${WORKER_URL}/api/search?q=${encodeURIComponent(query)}`);
-                const data = await res.json();
-                
-                if (data.success && data.results && data.results.length > 0) {
-                    resultsDiv.innerHTML = data.results.map(s => `
-                        <div class="flex items-center gap-4 bg-zinc-900/50 p-3 rounded-xl hover:bg-zinc-800 transition cursor-pointer border border-white/5" 
-                             onclick="playSong('${s.id}', '${s.title.replace(/'/g, "\\'")}', '${s.artist.replace(/'/g, "\\'")}', '${s.img}')">
-                            <img src="${s.img}" class="w-14 h-14 rounded-lg object-cover shadow-md bg-zinc-800">
-                            <div class="flex-1 min-w-0">
-                                <h4 class="text-sm font-bold text-white truncate">${s.title}</h4>
-                                <p class="text-xs text-zinc-400 truncate">${s.artist}</p>
-                            </div>
-                            <div class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white shrink-0">
-                                <svg class="w-4 h-4 ml-0.5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-                            </div>
-                        </div>`).join('');
-                } else {
-                    resultsDiv.innerHTML = '<div class="text-zinc-500 col-span-full">No songs found.</div>';
-                }
-            } catch (err) {
-                resultsDiv.innerHTML = '<div class="text-red-500 col-span-full">Search failed.</div>';
-            }
-        }
-
-        // --- DATABASE LOGIC ---
-        async function loadDbStats() {
-            try {
-                const res = await fetch(`${WORKER_URL}/api/db/stats`);
-                const data = await res.json();
-                
-                const renderListItem = (item) => `
-                    <div class="flex items-center gap-4 bg-zinc-900/50 p-3 rounded-xl hover:bg-zinc-800 transition cursor-pointer border border-white/5" 
-                         onclick="playSong('${item.stream_id}', '${item.title.replace(/'/g, "\\'")}', '${item.artist.replace(/'/g, "\\'")}', '${item.thumbnail}')">
-                        <img src="${item.thumbnail}" class="w-12 h-12 rounded-lg object-cover bg-zinc-800">
-                        <div class="flex-1 min-w-0">
-                            <h4 class="text-sm font-bold text-white truncate">${item.title}</h4>
-                            <p class="text-xs text-zinc-400 truncate">${item.artist}</p>
-                        </div>
-                    </div>`;
-
-                if(data.recent && data.recent.length > 0) {
-                    document.getElementById('home-recent').innerHTML = data.recent.map(item => `
-                    <div class="group cursor-pointer" onclick="playSong('${item.stream_id}', '${item.title.replace(/'/g, "\\'")}', '${item.artist.replace(/'/g, "\\'")}', '${item.thumbnail}')">
-                        <div class="relative aspect-square rounded-xl overflow-hidden mb-3 border border-white/5 bg-zinc-800">
-                            <img src="${item.thumbnail}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
-                            <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                                <div class="w-12 h-12 bg-white text-black rounded-full flex items-center justify-center shadow-lg">
-                                    <svg class="w-6 h-6 ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-                                </div>
-                            </div>
-                        </div>
-                        <h3 class="font-semibold text-sm text-white truncate">${item.title}</h3>
-                        <p class="text-xs text-zinc-400 mt-0.5 truncate">${item.artist}</p>
-                    </div>`).join('');
-                }
-
-                if(data.top && data.top.length > 0) {
-                    document.getElementById('library-top').innerHTML = data.top.map(renderListItem).join('');
-                }
-            } catch (e) { console.log("DB Stats missing", e); }
-        }
-
-        function updatePlayerIcon(state) {
-            document.getElementById('icon-play').classList.add('hidden');
-            document.getElementById('icon-pause').classList.add('hidden');
-            document.getElementById('icon-loading').classList.add('hidden');
-            document.getElementById(`icon-${state}`).classList.remove('hidden');
-        }
-
-        // --- MASTER AUDIO PLAYBACK ---
-        async function playSong(id, title, artist, img) {
-            if (!isPlayerReady) return alert("Player is loading, please wait a second...");
-
-            // UI Bar Setup
-            document.getElementById('player-bar').classList.remove('hidden');
-            document.getElementById('player-title').innerText = title;
-            document.getElementById('player-artist').innerText = artist;
-            document.getElementById('player-img').src = img;
-            document.getElementById('progress-bar').style.width = `0%`;
-            updatePlayerIcon('loading');
-            
-            // Set iOS/Android Lock Screen Controls
-            if ('mediaSession' in navigator) {
-                navigator.mediaSession.metadata = new MediaMetadata({
-                    title: title, artist: artist,
-                    artwork:[{ src: img, sizes: '600x600', type: 'image/jpeg' }]
-                });
-                navigator.mediaSession.setActionHandler('play', () => togglePlay());
-                navigator.mediaSession.setActionHandler('pause', () => togglePlay());
-            }
-
-            try {
-                // Fetch the exact YouTube track using the real Apple Music Title & Artist
-                const res = await fetch(`${WORKER_URL}/api/yt-search?q=${encodeURIComponent(title + ' ' + artist)}`);
-                const data = await res.json();
-
-                if (data.success && data.videoId) {
-                    ytPlayer.loadVideoById(data.videoId); // This streams it instantly
-                    
-                    // Save to history asynchronously
-                    fetch(`${WORKER_URL}/api/db/play`, {
-                        method: 'POST',
-                        headers: {'Content-Type': 'application/json'},
-                        body: JSON.stringify({ title, artist, thumbnail: img, stream_id: id })
-                    });
-                } else {
-                    alert("Stream not available for this track.");
-                    updatePlayerIcon('play');
-                }
-            } catch(e) {
-                alert("Network error fetching the stream.");
-                updatePlayerIcon('play');
+            if (data.url) {
+                audio.src = data.url;
+                audio.play();
+                document.getElementById('p-icon').innerHTML = '<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>';
             }
         }
 
         function togglePlay() {
-            if (!isPlayerReady || !ytPlayer) return;
-            const state = ytPlayer.getPlayerState();
-            if (state === YT.PlayerState.PLAYING) {
-                ytPlayer.pauseVideo();
+            if (audio.paused) {
+                audio.play();
+                document.getElementById('p-icon').innerHTML = '<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>';
             } else {
-                ytPlayer.playVideo();
+                audio.pause();
+                document.getElementById('p-icon').innerHTML = '<path d="M8 5v14l11-7z"/>';
             }
         }
 
-        // Init App Data
-        loadHomeData();
-        loadDbStats();
+        audio.ontimeupdate = () => {
+            const p = (audio.currentTime / audio.duration) * 100;
+            document.getElementById('progress').style.width = p + "%";
+        };
+
+        loadHome();
     </script>
 </body>
 </html>
