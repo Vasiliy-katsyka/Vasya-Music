@@ -491,6 +491,7 @@
             loadLyrics(id);
 
             try {
+                // The backend now heavily searches for full audio, it might take 1-2 seconds longer, but it's worth it.
                 const res = await fetch(`${WORKER_URL}/api/stream?id=${id}`);
                 const data = await res.json();
 
@@ -504,10 +505,10 @@
                         body: JSON.stringify({ title, artist, thumbnail: img, id: id, artistId: artistId })
                     });
                 } else {
-                    throw new Error("No stream URL");
+                    throw new Error(data.error || "No full stream URL found.");
                 }
             } catch(e) { 
-                alert("Audio stream unavailable right now.");
+                alert(`Could not fetch the full audio for this track. (${e.message})`);
                 updatePlayerIcon('play');
             }
         }
