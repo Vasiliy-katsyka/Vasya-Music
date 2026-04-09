@@ -12,10 +12,7 @@
             theme: {
                 extend: {
                     fontFamily: { sans: ['Inter', 'sans-serif'] },
-                    colors: {
-                        appBase: '#000000',
-                        appAccent: '#3b82f6',
-                    }
+                    colors: { appBase: '#000000', appAccent: '#3b82f6' }
                 }
             }
         }
@@ -34,15 +31,12 @@
 </head>
 <body class="bg-appBase text-white font-sans antialiased relative min-h-screen pb-32 md:pb-24 flex flex-col">
 
-    <!-- Ambient Glows -->
     <div class="fixed top-[-10%] left-[-10%] w-[50vw] h-[50vw] rounded-full bg-blue-900/20 blur-[120px] pointer-events-none z-0"></div>
     <div class="fixed top-[20%] right-[-10%] w-[40vw] h-[40vw] rounded-full bg-purple-900/10 blur-[100px] pointer-events-none z-0"></div>
 
-    <!-- Hidden Audio Element -->
     <audio id="audio-element"></audio>
 
     <div class="flex h-full w-full relative z-10 max-w-[1600px] mx-auto flex-1">
-
         <!-- DESKTOP SIDEBAR -->
         <aside class="hidden md:flex flex-col w-64 h-screen sticky top-0 border-r border-white/5 bg-appBase/50 backdrop-blur-xl p-6">
             <h1 class="text-2xl font-extrabold tracking-tighter text-gradient mb-10">Vasya Music</h1>
@@ -64,14 +58,11 @@
 
         <!-- MAIN SCROLLABLE CONTENT -->
         <main class="flex-1 min-w-0 w-full relative">
-            
-            <!-- MOBILE HEADER -->
             <header class="md:hidden sticky top-0 z-30 px-5 pt-12 pb-4 glass-panel border-b-0 border-white/5 flex justify-between items-center">
                 <h1 class="text-2xl font-extrabold tracking-tighter text-gradient">Vasya Music</h1>
             </header>
 
             <div class="p-5 md:p-10">
-                
                 <!-- HOME VIEW -->
                 <div id="view-home" class="view-section animate-fade-in">
                     <h2 class="text-2xl md:text-3xl font-bold mb-6 tracking-tight text-white/90">Trending Releases</h2>
@@ -89,12 +80,10 @@
                 <div id="view-search" class="view-section hidden animate-fade-in">
                     <h2 class="text-2xl md:text-3xl font-bold mb-6 tracking-tight text-white/90">Search</h2>
                     <div class="relative mb-8">
-                        <input type="text" id="search-input" placeholder="Search songs, artists, or albums..." class="w-full bg-zinc-900 border border-zinc-800 rounded-xl py-4 pl-12 pr-4 text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition shadow-lg text-lg">
+                        <input type="text" id="search-input" placeholder="Search songs or artists..." class="w-full bg-zinc-900 border border-zinc-800 rounded-xl py-4 pl-12 pr-4 text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition shadow-lg text-lg">
                         <svg class="w-6 h-6 absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/></svg>
                     </div>
-                    <div id="search-results" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        <!-- Results render here -->
-                    </div>
+                    <div id="search-results" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
                 </div>
 
                 <!-- LIBRARY VIEW -->
@@ -104,7 +93,6 @@
                         <div class="text-zinc-500">Your most played tracks will appear here.</div>
                     </div>
                 </div>
-
             </div>
         </main>
     </div>
@@ -123,16 +111,12 @@
 
         <div class="flex items-center gap-2 md:gap-4 pr-2">
             <button onclick="togglePlay()" class="w-10 h-10 md:w-12 md:h-12 bg-white text-black rounded-full flex items-center justify-center hover:scale-105 active:scale-95 transition-transform shadow-lg">
-                <!-- Play Icon -->
                 <svg id="icon-play" class="w-5 h-5 ml-1 hidden" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-                <!-- Pause Icon -->
                 <svg id="icon-pause" class="w-5 h-5 hidden" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
-                <!-- Loading Spinner -->
                 <svg id="icon-loading" class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
             </button>
         </div>
         
-        <!-- Progress Bar -->
         <div class="absolute bottom-0 left-4 right-4 h-[3px] bg-white/10 rounded-full overflow-hidden">
             <div id="progress-bar" class="h-full bg-blue-500 w-0 rounded-full transition-all duration-100 ease-linear"></div>
         </div>
@@ -157,13 +141,11 @@
     </nav>
 
     <script>
-        // REPLACE WITH YOUR CLOUDFLARE WORKER URL
+        // REPLACE THIS WITH YOUR NEW WORKER URL
         const WORKER_URL = "https://vasya-music.kviappsgames.workers.dev";
         
         const audio = document.getElementById('audio-element');
-        let currentSong = null;
 
-        // --- UI ROUTING ---
         function nav(viewId) {
             document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
             document.getElementById(`view-${viewId}`).classList.remove('hidden');
@@ -171,49 +153,53 @@
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        // --- HELPER: DECODE HTML TEXT ---
         function decodeHTML(html) {
             const txt = document.createElement("textarea");
             txt.innerHTML = html;
             return txt.value;
         }
 
-        // --- LOAD HOME (TRENDING) ---
+        // Extracts exactly based on saavn.sumit.co structure
+        function extractSongData(item) {
+            const title = decodeHTML(item.name || "Unknown Track").replace(/'/g, "\\'");
+            const artistList = item.artists?.primary?.map(a => a.name).join(', ') || 'Unknown Artist';
+            const artist = decodeHTML(artistList).replace(/'/g, "\\'");
+            const img = item.image && item.image.length > 0 ? item.image[item.image.length - 1].url : 'https://placehold.co/500x500';
+            const streamUrl = item.downloadUrl && item.downloadUrl.length > 0 ? item.downloadUrl[item.downloadUrl.length - 1].url : null;
+            
+            return { id: item.id, title, artist, img, streamUrl };
+        }
+
         async function loadHomeData() {
             try {
                 const res = await fetch(`${WORKER_URL}/api/home`);
                 const data = await res.json();
                 
-                if(data && data.data && data.data.results) {
+                if(data && data.success && data.data && data.data.results) {
                     const html = data.data.results.map(item => {
-                        const title = decodeHTML(item.name).replace(/'/g, "\\'");
-                        const artist = decodeHTML(item.primaryArtists || item.artists?.primary?.[0]?.name || 'Unknown').replace(/'/g, "\\'");
-                        const img = item.image[item.image.length - 1].url; // Highest quality image
-                        const streamUrl = item.downloadUrl[item.downloadUrl.length - 1].url; // Highest quality mp4
-
+                        const s = extractSongData(item);
                         return `
-                        <div class="snap-start shrink-0 w-40 md:w-56 group cursor-pointer" onclick="playSong('${item.id}', '${title}', '${artist}', '${img}', '${streamUrl}')">
+                        <div class="snap-start shrink-0 w-40 md:w-56 group cursor-pointer" onclick="playSong('${s.id}', '${s.title}', '${s.artist}', '${s.img}', '${s.streamUrl}')">
                             <div class="relative w-full aspect-square rounded-2xl overflow-hidden mb-3 shadow-2xl border border-white/5">
-                                <img src="${img}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                                <img src="${s.img}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
                                 <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
                                     <div class="w-12 h-12 bg-blue-500 text-white rounded-full flex items-center justify-center shadow-lg transform translate-y-4 group-hover:translate-y-0 transition-all">
                                         <svg class="w-6 h-6 ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
                                     </div>
                                 </div>
                             </div>
-                            <h3 class="font-bold text-sm md:text-base text-white truncate">${title}</h3>
-                            <p class="text-xs md:text-sm text-zinc-400 font-medium truncate">${artist}</p>
+                            <h3 class="font-bold text-sm md:text-base text-white truncate">${s.title}</h3>
+                            <p class="text-xs md:text-sm text-zinc-400 font-medium truncate">${s.artist}</p>
                         </div>`;
                     }).join('');
                     document.getElementById('home-new-releases').innerHTML = html;
                 }
             } catch (e) {
-                console.error("Failed to load home", e);
+                console.error("Home Load Error:", e);
                 document.getElementById('home-new-releases').innerHTML = '<span class="text-red-400">Failed to load trending music. Check F12.</span>';
             }
         }
 
-        // --- SEARCH LOGIC ---
         const searchInput = document.getElementById('search-input');
         let searchTimeout;
 
@@ -225,31 +211,22 @@
         async function doSearch(query) {
             if(!query.trim()) return;
             const resultsDiv = document.getElementById('search-results');
-            resultsDiv.innerHTML = '<div class="text-zinc-500 animate-pulse col-span-full">Searching library...</div>';
+            resultsDiv.innerHTML = '<div class="text-zinc-500 animate-pulse col-span-full">Searching global library...</div>';
             
             try {
                 const res = await fetch(`${WORKER_URL}/api/search?q=${encodeURIComponent(query)}`);
                 const data = await res.json();
                 
-                if (data && data.data && data.data.results && data.data.results.length > 0) {
+                if (data && data.success && data.data && data.data.results && data.data.results.length > 0) {
                     resultsDiv.innerHTML = data.data.results.map(item => {
-                        const title = decodeHTML(item.name).replace(/'/g, "\\'");
-                        const artist = decodeHTML(item.primaryArtists || item.artists?.primary?.[0]?.name || 'Unknown').replace(/'/g, "\\'");
-                        const img = item.image[item.image.length - 1].url;
-                        
-                        // Fix for saavn.dev format variation safely getting stream
-                        let streamUrl = "";
-                        if(item.downloadUrl && item.downloadUrl.length > 0) {
-                             streamUrl = item.downloadUrl[item.downloadUrl.length - 1].url;
-                        }
-
+                        const s = extractSongData(item);
                         return `
                         <div class="flex items-center gap-4 bg-zinc-900/50 p-3 rounded-xl hover:bg-zinc-800 transition cursor-pointer border border-white/5" 
-                             onclick="playSong('${item.id}', '${title}', '${artist}', '${img}', '${streamUrl}')">
-                            <img src="${img}" class="w-14 h-14 rounded-lg object-cover shadow-md">
+                             onclick="playSong('${s.id}', '${s.title}', '${s.artist}', '${s.img}', '${s.streamUrl}')">
+                            <img src="${s.img}" class="w-14 h-14 rounded-lg object-cover shadow-md">
                             <div class="flex-1 min-w-0">
-                                <h4 class="text-sm font-bold text-white truncate">${title}</h4>
-                                <p class="text-xs text-zinc-400 truncate">${artist}</p>
+                                <h4 class="text-sm font-bold text-white truncate">${s.title}</h4>
+                                <p class="text-xs text-zinc-400 truncate">${s.artist}</p>
                             </div>
                             <div class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white shrink-0">
                                 <svg class="w-4 h-4 ml-0.5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
@@ -260,11 +237,11 @@
                     resultsDiv.innerHTML = '<div class="text-zinc-500 col-span-full">No songs found.</div>';
                 }
             } catch (err) {
-                resultsDiv.innerHTML = '<div class="text-red-500 col-span-full">Search failed. API might be unreachable.</div>';
+                console.error(err);
+                resultsDiv.innerHTML = '<div class="text-red-500 col-span-full">Search failed. API unreachable.</div>';
             }
         }
 
-        // --- DATABASE STATS ---
         async function loadDbStats() {
             try {
                 const res = await fetch(`${WORKER_URL}/api/db/stats`);
@@ -280,7 +257,6 @@
                         </div>
                     </div>`;
 
-                // Render recent jump-back-in cards for Home view
                 if(data.recent && data.recent.length > 0) {
                     document.getElementById('home-recent').innerHTML = data.recent.map(item => `
                     <div class="group cursor-pointer" onclick="playSong('${item.stream_id}', '${item.title.replace(/'/g, "\\'")}', '${item.artist.replace(/'/g, "\\'")}', '${item.thumbnail}', null, true)">
@@ -300,10 +276,9 @@
                 if(data.top && data.top.length > 0) {
                     document.getElementById('library-top').innerHTML = data.top.map(renderListItem).join('');
                 }
-            } catch (e) { console.log("DB Stats Error", e); }
+            } catch (e) { console.log("DB Stats missing", e); }
         }
 
-        // --- PLAYBACK LOGIC ---
         function updatePlayerIcon(state) {
             document.getElementById('icon-play').classList.add('hidden');
             document.getElementById('icon-pause').classList.add('hidden');
@@ -311,7 +286,6 @@
             document.getElementById(`icon-${state}`).classList.remove('hidden');
         }
 
-        // isDbPlay indicates we are playing from library where we only have the ID and need to fetch the URL again.
         async function playSong(id, title, artist, img, directUrl = null, isDbPlay = false) {
             document.getElementById('player-bar').classList.remove('hidden');
             document.getElementById('player-title').innerText = title;
@@ -322,25 +296,22 @@
             
             let finalUrl = directUrl;
 
-            // If we only have the ID (playing from history), we must fetch the direct URL via search
-            if (isDbPlay || !finalUrl) {
+            // Proxy lookup for DB clicks where the direct URL wasn't provided
+            if (isDbPlay || !finalUrl || finalUrl === 'null') {
                 try {
-                    // Quick proxy trick: search by exact song ID via saavn API 
-                    // Technically saavn.dev has a /songs endpoint, but let's use the search query safely
                     const res = await fetch(`${WORKER_URL}/api/search?q=${encodeURIComponent(title + " " + artist)}`);
                     const data = await res.json();
-                    const song = data.data.results[0]; // grab top match
-                    if(song && song.downloadUrl) {
-                        finalUrl = song.downloadUrl[song.downloadUrl.length - 1].url;
+                    if(data.success && data.data && data.data.results.length > 0) {
+                        const song = extractSongData(data.data.results[0]);
+                        finalUrl = song.streamUrl;
                     }
-                } catch(e) { console.error("Could not resolve DB song", e); }
+                } catch(e) { console.error("URL lookup failed", e); }
             }
 
             if (finalUrl) {
                 audio.src = finalUrl;
-                audio.play().catch(e => { alert("Playback blocked by browser. Tap play again."); updatePlayerIcon('play'); });
+                audio.play().catch(e => { alert("Playback blocked. Tap play."); updatePlayerIcon('play'); });
                 
-                // Save to Database Background
                 fetch(`${WORKER_URL}/api/db/play`, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
@@ -353,18 +324,14 @@
         }
 
         function togglePlay() {
-            if (audio.paused) { 
-                audio.play(); 
-            } else { 
-                audio.pause(); 
-            }
+            if (audio.paused) audio.play();
+            else audio.pause();
         }
 
         audio.addEventListener('play', () => updatePlayerIcon('pause'));
         audio.addEventListener('pause', () => updatePlayerIcon('play'));
         audio.addEventListener('ended', () => updatePlayerIcon('play'));
 
-        // Progress bar updater
         audio.addEventListener('timeupdate', () => {
             if(audio.duration) {
                 const percent = (audio.currentTime / audio.duration) * 100;
@@ -372,7 +339,7 @@
             }
         });
 
-        // Init App
+        // Initialize App
         loadHomeData();
         loadDbStats();
     </script>
