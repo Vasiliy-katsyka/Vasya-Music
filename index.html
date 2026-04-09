@@ -149,26 +149,46 @@
             } catch (e) { console.log("DB Stats Error (Maybe Worker not setup yet?)", e); }
         }
 
-        // SEARCH Piped API (Via Worker)
-        async function doSearch(query) {
-            const resultsDiv = document.getElementById('search-results');
-            resultsDiv.innerHTML = '<div class="text-center text-zinc-500 py-10 animate-pulse">Searching global library...</div>';
-            
-            const res = await fetch(`${WORKER_URL}/api/search?q=${encodeURIComponent(query)}`);
-            const data = await res.json();
-            
-            resultsDiv.innerHTML = data.items.map(item => {
-                const streamId = item.url.split('=')[1];
-                return `
-                <div class="flex items-center gap-4 p-3 hover:bg-zinc-900 rounded-xl cursor-pointer transition" onclick="playSong('${streamId}', '${item.title.replace(/'/g, "\\'")}', '${item.uploaderName.replace(/'/g, "\\'")}', '${item.thumbnail}')">
-                    <img src="${item.thumbnail}" class="w-14 h-14 rounded-md object-cover">
-                    <div class="flex-1 overflow-hidden">
-                        <div class="font-bold truncate text-sm">${item.title}</div>
-                        <div class="text-xs text-zinc-400 truncate">${item.uploaderName}</div>
-                    </div>
-                </div>`
-            }).join('');
+        // A helper function to handle fetch and log debug info
+        async function apiFetch(endpoint) {
+            console.log(`%c[Request] %c${endpoint}`, "color: blue; font-weight: bold", "color: gray");
+            try {
+                const res = await fetch(`${WORKER_URL}${endpoint}`);
+                const data = await res.json();
+                
+                if (data.error) {
+                    console.error(`%c[Worker Error]`, "color: red; font-weight: bold", data.error);
+                    console.table(data._debug);
+                    return null;
+                }
+        
+                console.log(`%c[Response Success]`, "color: green; font-weight: bold", {
+                    instance: data._debug?.upstream,
+                    status: data._debug?.status,
+                    results: data.items ? data.items.length : 'N/A'
+                });
+                
+                return data;
+            } catch (err) {
+                console.error("%c[Network/CORS Error] %cCheck if WORKER_URL is correct and CORS is enabled.", "color: red; font-weight: bold", "color: white");
+                return null;
+            }
         }
+        
+        async function doSearch(query) {
+            if(!query) return;
+            const resultsDiv = document.getElementById('search-results');
+            resultsDiv.innerHTML = '<div class="text-center text-zinc-500 py-10">Searching global library...</div>';
+            
+            const data = await apiFetch(`/api/search?q=${encodeURIComponent(query)}`);
+            if (!data || !data.items) {
+                resultsDiv.innerHTML = '<div class="text-center text-red-500 py-10">Search failed. Check F12 console.</div>';
+                return;
+            }
+            
+            renderSearchResults(data.items);
+        }
+
 
         // ARTIST POPUP LOGIC (Using iTunes API for clean discography)
         async function openArtist(name) {
@@ -211,27 +231,28 @@
 
         // PLAYBACK LOGIC
         async function playSong(streamId, title, artist, thumbnail) {
-            // 1. Update UI
+            // UI Updates...
             document.getElementById('player-title').innerText = title;
             document.getElementById('player-artist').innerText = artist;
-            document.getElementById('player-img').src = thumbnail;
             document.getElementById('play-btn').innerText = '⏳';
-
-            // 2. Fetch Stream URL from Worker
-            const res = await fetch(`${WORKER_URL}/api/stream?id=${streamId}`);
-            const data = await res.json();
+        
+            const data = await apiFetch(`/api/stream?id=${streamId}`);
             
-            // 3. Play
-            audio.src = data.url;
-            audio.play();
-            isPlaying = true;
-            document.getElementById('play-btn').innerText = '⏸';
-
-            // 4. Log to D1 Database
-            fetch(`${WORKER_URL}/api/db/play`, {
-                method: 'POST',
-                body: JSON.stringify({ title, artist, thumbnail, stream_id: streamId })
-            });
+            if (data && data.url) {
+                audio.src = data.url;
+                audio.play().catch(e => console.error("Playback failed:", e));
+                document.getElementById('play-btn').innerText = '⏸';
+                
+                // Log to DB
+                fetch(`${WORKER_URL}/api/db/play`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ title, artist, thumbnail, stream_id: streamId })
+                });
+            } else {
+                alert("Failed to get audio stream. Try another song.");
+                document.getElementById('play-btn').innerText = '▶';
+            }
         }
 
         function togglePlay() {
