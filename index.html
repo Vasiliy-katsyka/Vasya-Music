@@ -140,10 +140,8 @@
         </div>
     </nav>
 
-    <script>
-        // REPLACE THIS WITH YOUR NEW WORKER URL
+<script>
         const WORKER_URL = "https://vasya-music.kviappsgames.workers.dev";
-        
         const audio = document.getElementById('audio-element');
 
         function nav(viewId) {
@@ -153,21 +151,9 @@
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        function decodeHTML(html) {
-            const txt = document.createElement("textarea");
-            txt.innerHTML = html;
-            return txt.value;
-        }
-
-        // Extracts exactly based on saavn.sumit.co structure
-        function extractSongData(item) {
-            const title = decodeHTML(item.name || "Unknown Track").replace(/'/g, "\\'");
-            const artistList = item.artists?.primary?.map(a => a.name).join(', ') || 'Unknown Artist';
-            const artist = decodeHTML(artistList).replace(/'/g, "\\'");
-            const img = item.image && item.image.length > 0 ? item.image[item.image.length - 1].url : 'https://placehold.co/500x500';
-            const streamUrl = item.downloadUrl && item.downloadUrl.length > 0 ? item.downloadUrl[item.downloadUrl.length - 1].url : null;
-            
-            return { id: item.id, title, artist, img, streamUrl };
+        // Helper to safely escape strings for HTML inserts
+        function escape(str) {
+            return (str || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
         }
 
         async function loadHomeData() {
@@ -175,13 +161,12 @@
                 const res = await fetch(`${WORKER_URL}/api/home`);
                 const data = await res.json();
                 
-                if(data && data.success && data.data && data.data.results) {
-                    const html = data.data.results.map(item => {
-                        const s = extractSongData(item);
-                        return `
-                        <div class="snap-start shrink-0 w-40 md:w-56 group cursor-pointer" onclick="playSong('${s.id}', '${s.title}', '${s.artist}', '${s.img}', '${s.streamUrl}')">
+                // Backend returns an array directly, not data.data.results
+                if(Array.isArray(data) && data.length > 0) {
+                    const html = data.map(s => `
+                        <div class="snap-start shrink-0 w-40 md:w-56 group cursor-pointer" onclick="playSong('${s.id}', '${escape(s.title)}', '${escape(s.artist)}', '${s.thumbnail}')">
                             <div class="relative w-full aspect-square rounded-2xl overflow-hidden mb-3 shadow-2xl border border-white/5">
-                                <img src="${s.img}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                                <img src="${s.thumbnail}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
                                 <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
                                     <div class="w-12 h-12 bg-blue-500 text-white rounded-full flex items-center justify-center shadow-lg transform translate-y-4 group-hover:translate-y-0 transition-all">
                                         <svg class="w-6 h-6 ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
@@ -190,13 +175,12 @@
                             </div>
                             <h3 class="font-bold text-sm md:text-base text-white truncate">${s.title}</h3>
                             <p class="text-xs md:text-sm text-zinc-400 font-medium truncate">${s.artist}</p>
-                        </div>`;
-                    }).join('');
+                        </div>`).join('');
                     document.getElementById('home-new-releases').innerHTML = html;
                 }
             } catch (e) {
                 console.error("Home Load Error:", e);
-                document.getElementById('home-new-releases').innerHTML = '<span class="text-red-400">Failed to load trending music. Check F12.</span>';
+                document.getElementById('home-new-releases').innerHTML = '<span class="text-red-400">Failed to load trending music. API might be busy.</span>';
             }
         }
 
@@ -217,13 +201,11 @@
                 const res = await fetch(`${WORKER_URL}/api/search?q=${encodeURIComponent(query)}`);
                 const data = await res.json();
                 
-                if (data && data.success && data.data && data.data.results && data.data.results.length > 0) {
-                    resultsDiv.innerHTML = data.data.results.map(item => {
-                        const s = extractSongData(item);
-                        return `
+                if (Array.isArray(data) && data.length > 0) {
+                    resultsDiv.innerHTML = data.map(s => `
                         <div class="flex items-center gap-4 bg-zinc-900/50 p-3 rounded-xl hover:bg-zinc-800 transition cursor-pointer border border-white/5" 
-                             onclick="playSong('${s.id}', '${s.title}', '${s.artist}', '${s.img}', '${s.streamUrl}')">
-                            <img src="${s.img}" class="w-14 h-14 rounded-lg object-cover shadow-md">
+                             onclick="playSong('${s.id}', '${escape(s.title)}', '${escape(s.artist)}', '${s.thumbnail}')">
+                            <img src="${s.thumbnail}" class="w-14 h-14 rounded-lg object-cover shadow-md">
                             <div class="flex-1 min-w-0">
                                 <h4 class="text-sm font-bold text-white truncate">${s.title}</h4>
                                 <p class="text-xs text-zinc-400 truncate">${s.artist}</p>
@@ -231,8 +213,7 @@
                             <div class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white shrink-0">
                                 <svg class="w-4 h-4 ml-0.5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
                             </div>
-                        </div>`;
-                    }).join('');
+                        </div>`).join('');
                 } else {
                     resultsDiv.innerHTML = '<div class="text-zinc-500 col-span-full">No songs found.</div>';
                 }
@@ -246,20 +227,10 @@
             try {
                 const res = await fetch(`${WORKER_URL}/api/db/stats`);
                 const data = await res.json();
-                
-                const renderListItem = (item) => `
-                    <div class="flex items-center gap-4 bg-zinc-900/50 p-3 rounded-xl hover:bg-zinc-800 transition cursor-pointer border border-white/5" 
-                         onclick="playSong('${item.stream_id}', '${item.title.replace(/'/g, "\\'")}', '${item.artist.replace(/'/g, "\\'")}', '${item.thumbnail}', null, true)">
-                        <img src="${item.thumbnail}" class="w-12 h-12 rounded-lg object-cover">
-                        <div class="flex-1 min-w-0">
-                            <h4 class="text-sm font-bold text-white truncate">${item.title}</h4>
-                            <p class="text-xs text-zinc-400 truncate">${item.artist}</p>
-                        </div>
-                    </div>`;
 
                 if(data.recent && data.recent.length > 0) {
-                    document.getElementById('home-recent').innerHTML = data.recent.map(item => `
-                    <div class="group cursor-pointer" onclick="playSong('${item.stream_id}', '${item.title.replace(/'/g, "\\'")}', '${item.artist.replace(/'/g, "\\'")}', '${item.thumbnail}', null, true)">
+                    const html = data.recent.map(item => `
+                    <div class="group cursor-pointer" onclick="playSong('${item.stream_id}', '${escape(item.title)}', '${escape(item.artist)}', '${item.thumbnail}')">
                         <div class="relative aspect-square rounded-xl overflow-hidden mb-3 border border-white/5">
                             <img src="${item.thumbnail}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
                             <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
@@ -271,12 +242,11 @@
                         <h3 class="font-semibold text-sm text-white truncate">${item.title}</h3>
                         <p class="text-xs text-zinc-400 mt-0.5 truncate">${item.artist}</p>
                     </div>`).join('');
+                    
+                    document.getElementById('home-recent').innerHTML = html;
+                    document.getElementById('library-top').innerHTML = html; // Reusing recent for library
                 }
-
-                if(data.top && data.top.length > 0) {
-                    document.getElementById('library-top').innerHTML = data.top.map(renderListItem).join('');
-                }
-            } catch (e) { console.log("DB Stats missing", e); }
+            } catch (e) { console.log("DB Stats missing or D1 Database not bound", e); }
         }
 
         function updatePlayerIcon(state) {
@@ -286,39 +256,39 @@
             document.getElementById(`icon-${state}`).classList.remove('hidden');
         }
 
-        async function playSong(id, title, artist, img, directUrl = null, isDbPlay = false) {
+        // Updated to fetch the audio stream FIRST, then play
+        async function playSong(id, title, artist, img) {
             document.getElementById('player-bar').classList.remove('hidden');
             document.getElementById('player-title').innerText = title;
             document.getElementById('player-artist').innerText = artist;
             document.getElementById('player-img').src = img;
             
             updatePlayerIcon('loading');
-            
-            let finalUrl = directUrl;
 
-            // Proxy lookup for DB clicks where the direct URL wasn't provided
-            if (isDbPlay || !finalUrl || finalUrl === 'null') {
-                try {
-                    const res = await fetch(`${WORKER_URL}/api/search?q=${encodeURIComponent(title + " " + artist)}`);
-                    const data = await res.json();
-                    if(data.success && data.data && data.data.results.length > 0) {
-                        const song = extractSongData(data.data.results[0]);
-                        finalUrl = song.streamUrl;
-                    }
-                } catch(e) { console.error("URL lookup failed", e); }
-            }
+            try {
+                // Call the stream API you created in your worker
+                const res = await fetch(`${WORKER_URL}/api/stream?id=${id}`);
+                const data = await res.json();
 
-            if (finalUrl) {
-                audio.src = finalUrl;
-                audio.play().catch(e => { alert("Playback blocked. Tap play."); updatePlayerIcon('play'); });
-                
-                fetch(`${WORKER_URL}/api/db/play`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ title, artist, thumbnail: img, stream_id: id })
-                });
-            } else {
-                alert("Failed to find stream for this track.");
+                if (data.url) {
+                    audio.src = data.url;
+                    audio.play().catch(e => { 
+                        console.log("Auto-play blocked", e); 
+                        updatePlayerIcon('play'); 
+                    });
+                    
+                    // Save to Database (note: changed stream_id to id to match your worker logic)
+                    fetch(`${WORKER_URL}/api/db/play`, {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({ title, artist, thumbnail: img, id: id })
+                    });
+                } else {
+                    throw new Error("No URL returned");
+                }
+            } catch(e) { 
+                console.error("Stream extraction failed", e); 
+                alert("Could not load audio stream. The server might be rate-limited.");
                 updatePlayerIcon('play');
             }
         }
