@@ -14,395 +14,366 @@
                     fontFamily: { sans: ['Inter', 'sans-serif'] },
                     colors: {
                         appBase: '#000000',
-                        appSurface: '#121212',
-                        appElevated: '#1A1A1A',
-                        appAccent: '#3b82f6', // Bright Blue
+                        appAccent: '#3b82f6',
                     }
                 }
             }
         }
     </script>
     <style>
-        /* Hide scrollbars for an app-like feel */
         ::-webkit-scrollbar { display: none; }
         body { -ms-overflow-style: none; scrollbar-width: none; overscroll-behavior-y: none; -webkit-tap-highlight-color: transparent; }
-        
-        /* Smooth Gradient Text */
         .text-gradient {
             background-clip: text;
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-image: linear-gradient(90deg, #60a5fa, #a78bfa);
         }
+        .glass-panel { background: rgba(24, 24, 27, 0.6); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.05); }
     </style>
 </head>
-<body class="bg-appBase text-white font-sans antialiased relative min-h-screen pb-32 md:pb-24">
+<body class="bg-appBase text-white font-sans antialiased relative min-h-screen pb-32 md:pb-24 flex flex-col">
 
-    <!-- AMBIENT BACKGROUND GLOWS (Premium App Feel) -->
+    <!-- Ambient Glows -->
     <div class="fixed top-[-10%] left-[-10%] w-[50vw] h-[50vw] rounded-full bg-blue-900/20 blur-[120px] pointer-events-none z-0"></div>
     <div class="fixed top-[20%] right-[-10%] w-[40vw] h-[40vw] rounded-full bg-purple-900/10 blur-[100px] pointer-events-none z-0"></div>
 
-    <!-- MAIN WRAPPER (Handles Desktop Sidebar vs Mobile Bottom Nav layout) -->
-    <div class="flex h-full w-full relative z-10 max-w-[1600px] mx-auto">
+    <!-- Hidden Audio Element -->
+    <audio id="audio-element"></audio>
 
-        <!-- DESKTOP SIDEBAR (Hidden on mobile, beautiful on PC) -->
+    <div class="flex h-full w-full relative z-10 max-w-[1600px] mx-auto flex-1">
+
+        <!-- DESKTOP SIDEBAR -->
         <aside class="hidden md:flex flex-col w-64 h-screen sticky top-0 border-r border-white/5 bg-appBase/50 backdrop-blur-xl p-6">
             <h1 class="text-2xl font-extrabold tracking-tighter text-gradient mb-10">Vasya Music</h1>
             <nav class="space-y-4 flex-1">
-                <!-- Active Link -->
-                <a href="#" class="flex items-center gap-4 text-white font-semibold transition">
-                    <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M11.47 3.84a.75.75 0 011.06 0l8.69 8.69a.75.75 0 101.06-1.06l-8.689-8.69a2.25 2.25 0 00-3.182 0l-8.69 8.69a.75.75 0 001.061 1.06l8.69-8.69z" /><path d="M12 5.432l8.159 8.159c.03.03.06.058.091.086v6.198c0 1.035-.84 1.875-1.875 1.875H15a.75.75 0 01-.75-.75v-4.5a.75.75 0 00-.75-.75h-3a.75.75 0 00-.75.75V21a.75.75 0 01-.75.75H5.625a1.875 1.875 0 01-1.875-1.875v-6.198a2.29 2.29 0 00.091-.086L12 5.43z" /></svg>
+                <button onclick="nav('home')" class="w-full flex items-center gap-4 text-white font-semibold hover:text-blue-400 transition">
+                    <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M11.47 3.84a.75.75 0 011.06 0l8.69 8.69a.75.75 0 101.06-1.06l-8.689-8.69a2.25 2.25 0 00-3.182 0l-8.69 8.69a.75.75 0 001.061 1.06l8.69-8.69z"/><path d="M12 5.432l8.159 8.159c.03.03.06.058.091.086v6.198c0 1.035-.84 1.875-1.875 1.875H15a.75.75 0 01-.75-.75v-4.5a.75.75 0 00-.75-.75h-3a.75.75 0 00-.75.75V21a.75.75 0 01-.75.75H5.625a1.875 1.875 0 01-1.875-1.875v-6.198a2.29 2.29 0 00.091-.086L12 5.43z"/></svg>
                     Home
-                </a>
-                <!-- Inactive Links -->
-                <a href="#" class="flex items-center gap-4 text-zinc-500 hover:text-white font-medium transition">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" /></svg>
+                </button>
+                <button onclick="nav('search')" class="w-full flex items-center gap-4 text-zinc-400 font-medium hover:text-blue-400 transition">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/></svg>
                     Search
-                </a>
-                <a href="#" class="flex items-center gap-4 text-zinc-500 hover:text-white font-medium transition">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 010 3.75H5.625a1.875 1.875 0 010-3.75z" /></svg>
+                </button>
+                <button onclick="nav('library')" class="w-full flex items-center gap-4 text-zinc-400 font-medium hover:text-blue-400 transition">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 010 3.75H5.625a1.875 1.875 0 010-3.75z"/></svg>
                     Library
-                </a>
+                </button>
             </nav>
-            <div class="flex items-center gap-3 mt-auto pt-6 border-t border-white/5 cursor-pointer group">
-                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Vasya" class="w-10 h-10 rounded-full bg-zinc-800 border border-white/10 group-hover:border-white/30 transition">
-                <div class="text-sm font-semibold text-white group-hover:text-blue-400 transition">Profile & Stats</div>
-            </div>
         </aside>
 
         <!-- MAIN SCROLLABLE CONTENT -->
-        <main class="flex-1 min-w-0 w-full">
+        <main class="flex-1 min-w-0 w-full relative">
             
-            <!-- MOBILE HEADER (Sticky Glass) -->
-            <header class="md:hidden sticky top-0 z-30 px-5 pt-12 pb-4 bg-appBase/80 backdrop-blur-2xl border-b border-white/5 flex justify-between items-center">
+            <!-- MOBILE HEADER -->
+            <header class="md:hidden sticky top-0 z-30 px-5 pt-12 pb-4 glass-panel border-b-0 border-white/5 flex justify-between items-center">
                 <h1 class="text-2xl font-extrabold tracking-tighter text-gradient">Vasya Music</h1>
-                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Vasya" class="w-9 h-9 rounded-full bg-zinc-800 border border-white/10 shadow-lg">
             </header>
 
-            <div class="p-5 md:p-10 pb-32">
+            <div class="p-5 md:p-10">
                 
-                <!-- HERO / NEW RELEASES SECTION -->
-                <h2 class="text-2xl md:text-3xl font-bold mb-6 tracking-tight text-white/90">New Releases</h2>
-                <div class="flex gap-4 overflow-x-auto snap-x pb-6 -mx-5 px-5 md:mx-0 md:px-0">
-                    
-                    <!-- NEW RELEASE CARD (Large) -->
-                    <div class="snap-start shrink-0 w-64 md:w-80 group cursor-pointer">
-                        <div class="relative w-full aspect-square rounded-2xl overflow-hidden mb-4 shadow-2xl">
-                            <!-- Image -->
-                            <img src="https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?q=80&w=600&auto=format&fit=crop" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
-                            <!-- Play Overlay -->
-                            <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                                <div class="w-16 h-16 bg-blue-500 text-white rounded-full flex items-center justify-center shadow-lg transform translate-y-4 group-hover:translate-y-0 transition-all duration-300">
-                                    <svg class="w-8 h-8 ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-                                </div>
-                            </div>
-                        </div>
-                        <h3 class="font-bold text-lg text-white truncate">Midnight Stories</h3>
-                        <p class="text-sm text-zinc-400 font-medium truncate">Alex Warren</p>
+                <!-- HOME VIEW -->
+                <div id="view-home" class="view-section animate-fade-in">
+                    <h2 class="text-2xl md:text-3xl font-bold mb-6 tracking-tight text-white/90">Trending Releases</h2>
+                    <div id="home-new-releases" class="flex gap-4 overflow-x-auto snap-x pb-6 -mx-5 px-5 md:mx-0 md:px-0 scroll-smooth">
+                        <div class="text-zinc-500 animate-pulse">Loading amazing music...</div>
                     </div>
 
-                    <div class="snap-start shrink-0 w-64 md:w-80 group cursor-pointer">
-                        <div class="relative w-full aspect-square rounded-2xl overflow-hidden mb-4 shadow-2xl">
-                            <img src="https://images.unsplash.com/photo-1493225457124-a1a2a5956093?q=80&w=600&auto=format&fit=crop" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
-                            <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                                <div class="w-16 h-16 bg-blue-500 text-white rounded-full flex items-center justify-center shadow-lg transform translate-y-4 group-hover:translate-y-0 transition-all duration-300">
-                                    <svg class="w-8 h-8 ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-                                </div>
-                            </div>
-                        </div>
-                        <h3 class="font-bold text-lg text-white truncate">Stargazing EP</h3>
-                        <p class="text-sm text-zinc-400 font-medium truncate">Myles Smith</p>
+                    <h2 class="text-2xl font-bold mt-8 mb-6 tracking-tight text-white/90">Jump Back In</h2>
+                    <div id="home-recent" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
+                        <div class="text-zinc-500">Play some songs to build your library.</div>
                     </div>
-
                 </div>
 
-                <!-- JUMP BACK IN (Recent List) -->
-                <h2 class="text-2xl font-bold mt-8 mb-6 tracking-tight text-white/90">Jump Back In</h2>
-                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
-                    
-                    <!-- SMALL CARD -->
-                    <div class="group cursor-pointer">
-                        <div class="relative aspect-square rounded-xl overflow-hidden mb-3 border border-white/5">
-                            <img src="https://images.unsplash.com/photo-1514525253161-7a46d19cd819?q=80&w=400&auto=format&fit=crop" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
-                            <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                                <div class="w-12 h-12 bg-white text-black rounded-full flex items-center justify-center shadow-lg">
-                                    <svg class="w-6 h-6 ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-                                </div>
-                            </div>
-                        </div>
-                        <h3 class="font-semibold text-sm text-white truncate">Shape of You</h3>
-                        <p class="text-xs text-zinc-400 mt-0.5 truncate">Ed Sheeran</p>
+                <!-- SEARCH VIEW -->
+                <div id="view-search" class="view-section hidden animate-fade-in">
+                    <h2 class="text-2xl md:text-3xl font-bold mb-6 tracking-tight text-white/90">Search</h2>
+                    <div class="relative mb-8">
+                        <input type="text" id="search-input" placeholder="Search songs, artists, or albums..." class="w-full bg-zinc-900 border border-zinc-800 rounded-xl py-4 pl-12 pr-4 text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition shadow-lg text-lg">
+                        <svg class="w-6 h-6 absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/></svg>
                     </div>
-
-                    <!-- SMALL CARD 2 -->
-                    <div class="group cursor-pointer">
-                        <div class="relative aspect-square rounded-xl overflow-hidden mb-3 border border-white/5">
-                            <img src="https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=80&w=400&auto=format&fit=crop" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
-                            <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                                <div class="w-12 h-12 bg-white text-black rounded-full flex items-center justify-center shadow-lg">
-                                    <svg class="w-6 h-6 ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-                                </div>
-                            </div>
-                        </div>
-                        <h3 class="font-semibold text-sm text-white truncate">Interstellar Theme</h3>
-                        <p class="text-xs text-zinc-400 mt-0.5 truncate">Hans Zimmer</p>
+                    <div id="search-results" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <!-- Results render here -->
                     </div>
+                </div>
 
-                    <!-- SMALL CARD 3 -->
-                    <div class="group cursor-pointer">
-                        <div class="relative aspect-square rounded-xl overflow-hidden mb-3 border border-white/5">
-                            <img src="https://images.unsplash.com/photo-1459749411175-04bf5292ceea?q=80&w=400&auto=format&fit=crop" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
-                            <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                                <div class="w-12 h-12 bg-white text-black rounded-full flex items-center justify-center shadow-lg">
-                                    <svg class="w-6 h-6 ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-                                </div>
-                            </div>
-                        </div>
-                        <h3 class="font-semibold text-sm text-white truncate">Yellow</h3>
-                        <p class="text-xs text-zinc-400 mt-0.5 truncate">Coldplay</p>
+                <!-- LIBRARY VIEW -->
+                <div id="view-library" class="view-section hidden animate-fade-in">
+                    <h2 class="text-2xl md:text-3xl font-bold mb-6 tracking-tight text-white/90">Your Top Tracks</h2>
+                    <div id="library-top" class="flex flex-col gap-3">
+                        <div class="text-zinc-500">Your most played tracks will appear here.</div>
                     </div>
-
                 </div>
 
             </div>
         </main>
     </div>
 
-    <!-- 
-        ================================================================
-        FLOATING PLAYER (Hidden by default using 'hidden' class)
-        Remove the 'hidden' class to see how beautiful it looks!
-        ================================================================
-    -->
-    <div id="player-bar" class="hidden fixed bottom-[88px] md:bottom-8 left-4 right-4 md:left-1/2 md:-translate-x-1/2 md:w-[600px] bg-zinc-900/80 backdrop-blur-2xl border border-white/10 rounded-2xl p-2 md:p-3 flex items-center justify-between shadow-2xl z-40">
-        
-        <!-- Track Info -->
-        <div class="flex items-center gap-3 overflow-hidden w-[60%] cursor-pointer group">
-            <div class="relative w-12 h-12 md:w-14 md:h-14 shrink-0 rounded-lg overflow-hidden shadow-md group-hover:shadow-blue-500/20 transition">
-                <img src="https://images.unsplash.com/photo-1514525253161-7a46d19cd819?q=80&w=200&auto=format&fit=crop" class="w-full h-full object-cover">
+    <!-- FLOATING PLAYER -->
+    <div id="player-bar" class="hidden fixed bottom-[88px] md:bottom-8 left-4 right-4 md:left-1/2 md:-translate-x-1/2 md:w-[600px] glass-panel rounded-2xl p-2 md:p-3 flex items-center justify-between shadow-2xl z-40 transition-all duration-300">
+        <div class="flex items-center gap-3 overflow-hidden w-[60%] group">
+            <div class="relative w-12 h-12 md:w-14 md:h-14 shrink-0 rounded-lg overflow-hidden shadow-md">
+                <img id="player-img" src="" class="w-full h-full object-cover">
             </div>
             <div class="truncate">
-                <h4 class="text-sm md:text-base font-bold text-white truncate group-hover:text-blue-400 transition">Shape of You</h4>
-                <p class="text-xs md:text-sm text-zinc-400 truncate">Ed Sheeran</p>
+                <h4 id="player-title" class="text-sm md:text-base font-bold text-white truncate group-hover:text-blue-400 transition">Song Title</h4>
+                <p id="player-artist" class="text-xs md:text-sm text-zinc-400 truncate">Artist Name</p>
             </div>
         </div>
 
-        <!-- Controls -->
         <div class="flex items-center gap-2 md:gap-4 pr-2">
-            <!-- Play/Pause Button (Solid White) -->
-            <button class="w-10 h-10 md:w-12 md:h-12 bg-white text-black rounded-full flex items-center justify-center hover:scale-105 active:scale-95 transition-transform shadow-lg">
-                <svg class="w-5 h-5 ml-0.5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-                <!-- Use this SVG for Pause when playing: -->
-                <!-- <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg> -->
-            </button>
-            
-            <!-- Next Track Button -->
-            <button class="w-10 h-10 flex items-center justify-center text-zinc-400 hover:text-white transition">
-                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M5 4v16l11-8zM17 4h2v16h-2z"/></svg>
+            <button onclick="togglePlay()" class="w-10 h-10 md:w-12 md:h-12 bg-white text-black rounded-full flex items-center justify-center hover:scale-105 active:scale-95 transition-transform shadow-lg">
+                <!-- Play Icon -->
+                <svg id="icon-play" class="w-5 h-5 ml-1 hidden" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                <!-- Pause Icon -->
+                <svg id="icon-pause" class="w-5 h-5 hidden" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+                <!-- Loading Spinner -->
+                <svg id="icon-loading" class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
             </button>
         </div>
         
-        <!-- Progress Bar (Absolute bottom) -->
-        <div class="absolute bottom-0 left-4 right-4 h-[2px] bg-white/10 rounded-full overflow-hidden">
-            <div class="h-full bg-blue-500 w-1/3 rounded-full"></div>
+        <!-- Progress Bar -->
+        <div class="absolute bottom-0 left-4 right-4 h-[3px] bg-white/10 rounded-full overflow-hidden">
+            <div id="progress-bar" class="h-full bg-blue-500 w-0 rounded-full transition-all duration-100 ease-linear"></div>
         </div>
     </div>
 
-
-    <!-- 
-        ================================================================
-        BOTTOM NAVIGATION (Mobile Only - Glassmorphism)
-        ================================================================
-    -->
-    <nav class="md:hidden fixed bottom-0 left-0 w-full bg-black/60 backdrop-blur-3xl border-t border-white/5 pb-safe z-30">
+    <!-- MOBILE BOTTOM NAVIGATION -->
+    <nav class="md:hidden fixed bottom-0 left-0 w-full glass-panel border-t border-white/5 pb-safe z-30">
         <div class="flex justify-around items-center h-[72px] px-2">
-            
-            <!-- Home (Active) -->
-            <button class="flex flex-col items-center justify-center w-full h-full gap-1 text-white">
-                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M11.47 3.84a.75.75 0 011.06 0l8.69 8.69a.75.75 0 101.06-1.06l-8.689-8.69a2.25 2.25 0 00-3.182 0l-8.69 8.69a.75.75 0 001.061 1.06l8.69-8.69z" /><path d="M12 5.432l8.159 8.159c.03.03.06.058.091.086v6.198c0 1.035-.84 1.875-1.875 1.875H15a.75.75 0 01-.75-.75v-4.5a.75.75 0 00-.75-.75h-3a.75.75 0 00-.75.75V21a.75.75 0 01-.75.75H5.625a1.875 1.875 0 01-1.875-1.875v-6.198a2.29 2.29 0 00.091-.086L12 5.43z" /></svg>
+            <button onclick="nav('home')" class="flex flex-col items-center justify-center w-full h-full gap-1 text-white hover:text-blue-400">
+                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M11.47 3.84a.75.75 0 011.06 0l8.69 8.69a.75.75 0 101.06-1.06l-8.689-8.69a2.25 2.25 0 00-3.182 0l-8.69 8.69a.75.75 0 001.061 1.06l8.69-8.69z"/><path d="M12 5.432l8.159 8.159c.03.03.06.058.091.086v6.198c0 1.035-.84 1.875-1.875 1.875H15a.75.75 0 01-.75-.75v-4.5a.75.75 0 00-.75-.75h-3a.75.75 0 00-.75.75V21a.75.75 0 01-.75.75H5.625a1.875 1.875 0 01-1.875-1.875v-6.198a2.29 2.29 0 00.091-.086L12 5.43z"/></svg>
                 <span class="text-[10px] font-semibold">Home</span>
             </button>
-            
-            <!-- Search (Inactive) -->
-            <button class="flex flex-col items-center justify-center w-full h-full gap-1 text-zinc-500 hover:text-zinc-300 transition">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" /></svg>
+            <button onclick="nav('search')" class="flex flex-col items-center justify-center w-full h-full gap-1 text-zinc-400 hover:text-blue-400 transition">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/></svg>
                 <span class="text-[10px] font-semibold">Search</span>
             </button>
-            
-            <!-- Library (Inactive) -->
-            <button class="flex flex-col items-center justify-center w-full h-full gap-1 text-zinc-500 hover:text-zinc-300 transition">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 010 3.75H5.625a1.875 1.875 0 010-3.75z" /></svg>
+            <button onclick="nav('library')" class="flex flex-col items-center justify-center w-full h-full gap-1 text-zinc-400 hover:text-blue-400 transition">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 010 3.75H5.625a1.875 1.875 0 010-3.75z"/></svg>
                 <span class="text-[10px] font-semibold">Library</span>
             </button>
-            
-            <!-- Profile (Inactive) -->
-            <button class="flex flex-col items-center justify-center w-full h-full gap-1 text-zinc-500 hover:text-zinc-300 transition">
-                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Vasya" class="w-6 h-6 rounded-full bg-zinc-800 opacity-60">
-                <span class="text-[10px] font-semibold">Profile</span>
-            </button>
-
         </div>
     </nav>
 
     <script>
-        // CHANGE THIS TO YOUR CLOUDFLARE WORKER URL
+        // REPLACE WITH YOUR CLOUDFLARE WORKER URL
         const WORKER_URL = "https://vasya-music.kviappsgames.workers.dev";
+        
         const audio = document.getElementById('audio-element');
-        let isPlaying = false;
+        let currentSong = null;
 
-        // ROUTING
+        // --- UI ROUTING ---
         function nav(viewId) {
             document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
             document.getElementById(`view-${viewId}`).classList.remove('hidden');
-            if(viewId === 'home' || viewId === 'profile') loadDbStats();
+            if(viewId === 'library' || viewId === 'home') loadDbStats();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        // LOAD STATS FROM D1
-        async function loadDbStats() {
-            try {
-                const res = await fetch(`${WORKER_URL}/api/db/stats`);
-                const data = await res.json();
-                
-                document.getElementById('stat-total').innerText = data.recent.length + data.top.length; // Simplified total
-                
-                const renderCard = (item) => `
-                    <div class="bg-zinc-900/50 p-3 rounded-xl hover:bg-zinc-800 transition cursor-pointer group" onclick="playSong('${item.stream_id}', '${item.title.replace(/'/g, "\\'")}', '${item.artist.replace(/'/g, "\\'")}', '${item.thumbnail}')">
-                        <div class="relative w-full aspect-square mb-3">
-                            <img src="${item.thumbnail}" class="w-full h-full object-cover rounded-lg shadow-md group-hover:shadow-blue-500/20 transition">
-                            <div class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition rounded-lg">▶</div>
-                        </div>
-                        <div class="font-bold text-sm truncate">${item.title}</div>
-                        <div class="text-xs text-zinc-400 truncate">${item.artist}</div>
-                    </div>`;
-
-                document.getElementById('home-recent').innerHTML = data.recent.map(renderCard).join('');
-                document.getElementById('home-top').innerHTML = data.top.map(renderCard).join('');
-            } catch (e) { console.log("DB Stats Error (Maybe Worker not setup yet?)", e); }
+        // --- HELPER: DECODE HTML TEXT ---
+        function decodeHTML(html) {
+            const txt = document.createElement("textarea");
+            txt.innerHTML = html;
+            return txt.value;
         }
 
-        // A helper function to handle fetch and log debug info
-        async function apiFetch(endpoint) {
-            console.log(`%c[Request] %c${endpoint}`, "color: blue; font-weight: bold", "color: gray");
+        // --- LOAD HOME (TRENDING) ---
+        async function loadHomeData() {
             try {
-                const res = await fetch(`${WORKER_URL}${endpoint}`);
+                const res = await fetch(`${WORKER_URL}/api/home`);
                 const data = await res.json();
                 
-                if (data.error) {
-                    console.error(`%c[Worker Error]`, "color: red; font-weight: bold", data.error);
-                    console.table(data._debug);
-                    return null;
+                if(data && data.data && data.data.results) {
+                    const html = data.data.results.map(item => {
+                        const title = decodeHTML(item.name).replace(/'/g, "\\'");
+                        const artist = decodeHTML(item.primaryArtists || item.artists?.primary?.[0]?.name || 'Unknown').replace(/'/g, "\\'");
+                        const img = item.image[item.image.length - 1].url; // Highest quality image
+                        const streamUrl = item.downloadUrl[item.downloadUrl.length - 1].url; // Highest quality mp4
+
+                        return `
+                        <div class="snap-start shrink-0 w-40 md:w-56 group cursor-pointer" onclick="playSong('${item.id}', '${title}', '${artist}', '${img}', '${streamUrl}')">
+                            <div class="relative w-full aspect-square rounded-2xl overflow-hidden mb-3 shadow-2xl border border-white/5">
+                                <img src="${img}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                                <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
+                                    <div class="w-12 h-12 bg-blue-500 text-white rounded-full flex items-center justify-center shadow-lg transform translate-y-4 group-hover:translate-y-0 transition-all">
+                                        <svg class="w-6 h-6 ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                                    </div>
+                                </div>
+                            </div>
+                            <h3 class="font-bold text-sm md:text-base text-white truncate">${title}</h3>
+                            <p class="text-xs md:text-sm text-zinc-400 font-medium truncate">${artist}</p>
+                        </div>`;
+                    }).join('');
+                    document.getElementById('home-new-releases').innerHTML = html;
                 }
-        
-                console.log(`%c[Response Success]`, "color: green; font-weight: bold", {
-                    instance: data._debug?.upstream,
-                    status: data._debug?.status,
-                    results: data.items ? data.items.length : 'N/A'
-                });
-                
-                return data;
-            } catch (err) {
-                console.error("%c[Network/CORS Error] %cCheck if WORKER_URL is correct and CORS is enabled.", "color: red; font-weight: bold", "color: white");
-                return null;
+            } catch (e) {
+                console.error("Failed to load home", e);
+                document.getElementById('home-new-releases').innerHTML = '<span class="text-red-400">Failed to load trending music. Check F12.</span>';
             }
         }
-        
+
+        // --- SEARCH LOGIC ---
+        const searchInput = document.getElementById('search-input');
+        let searchTimeout;
+
+        searchInput.addEventListener('input', (e) => {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => doSearch(e.target.value), 600);
+        });
+
         async function doSearch(query) {
-            if(!query) return;
+            if(!query.trim()) return;
             const resultsDiv = document.getElementById('search-results');
-            resultsDiv.innerHTML = '<div class="text-center text-zinc-500 py-10">Searching global library...</div>';
-            
-            const data = await apiFetch(`/api/search?q=${encodeURIComponent(query)}`);
-            if (!data || !data.items) {
-                resultsDiv.innerHTML = '<div class="text-center text-red-500 py-10">Search failed. Check F12 console.</div>';
-                return;
-            }
-            
-            renderSearchResults(data.items);
-        }
-
-
-        // ARTIST POPUP LOGIC (Using iTunes API for clean discography)
-        async function openArtist(name) {
-            const modal = document.getElementById('artist-modal');
-            document.getElementById('modal-artist-name').innerText = name;
-            document.getElementById('modal-albums').innerHTML = '<div class="text-zinc-500 animate-pulse">Loading discography...</div>';
-            modal.classList.remove('translate-y-full');
-
-            // iTunes API doesn't need CORS/Worker
-            const res = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(name)}&entity=album&limit=20`);
-            const data = await res.json();
-            
-            document.getElementById('modal-albums').innerHTML = data.results.map(album => `
-                <div class="bg-zinc-900 p-3 rounded-xl cursor-pointer hover:bg-zinc-800 transition" onclick="playAlbumTrack('${name}', '${album.collectionName.replace(/'/g, "\\'")}', '${album.artworkUrl100.replace('100x100', '600x600')}')">
-                    <img src="${album.artworkUrl100.replace('100x100', '600x600')}" class="w-full aspect-square object-cover rounded-lg mb-2">
-                    <div class="font-bold text-sm truncate">${album.collectionName}</div>
-                    <div class="text-xs text-zinc-400">${album.releaseDate.substring(0,4)}</div>
-                </div>
-            `).join('');
-        }
-
-        function closeArtist() { document.getElementById('artist-modal').classList.add('translate-y-full'); }
-
-        // MAPPING ITUNES ALBUM TO PIPED STREAM
-        async function playAlbumTrack(artist, album, artwork) {
-            document.getElementById('modal-albums').innerHTML = '<div class="text-blue-400 animate-pulse">Finding official audio...</div>';
-            const query = `${artist} ${album}`;
+            resultsDiv.innerHTML = '<div class="text-zinc-500 animate-pulse col-span-full">Searching library...</div>';
             
             try {
                 const res = await fetch(`${WORKER_URL}/api/search?q=${encodeURIComponent(query)}`);
                 const data = await res.json();
                 
-                // SAFETY CHECK: Ensure data and data.items exist before trying to play!
-                if (data && data.items && data.items.length > 0) {
-                    const topTrack = data.items[0];
-                    const streamId = topTrack.url.split('=')[1];
-                    playSong(streamId, topTrack.title, artist, artwork);
-                    closeArtist();
+                if (data && data.data && data.data.results && data.data.results.length > 0) {
+                    resultsDiv.innerHTML = data.data.results.map(item => {
+                        const title = decodeHTML(item.name).replace(/'/g, "\\'");
+                        const artist = decodeHTML(item.primaryArtists || item.artists?.primary?.[0]?.name || 'Unknown').replace(/'/g, "\\'");
+                        const img = item.image[item.image.length - 1].url;
+                        
+                        // Fix for saavn.dev format variation safely getting stream
+                        let streamUrl = "";
+                        if(item.downloadUrl && item.downloadUrl.length > 0) {
+                             streamUrl = item.downloadUrl[item.downloadUrl.length - 1].url;
+                        }
+
+                        return `
+                        <div class="flex items-center gap-4 bg-zinc-900/50 p-3 rounded-xl hover:bg-zinc-800 transition cursor-pointer border border-white/5" 
+                             onclick="playSong('${item.id}', '${title}', '${artist}', '${img}', '${streamUrl}')">
+                            <img src="${img}" class="w-14 h-14 rounded-lg object-cover shadow-md">
+                            <div class="flex-1 min-w-0">
+                                <h4 class="text-sm font-bold text-white truncate">${title}</h4>
+                                <p class="text-xs text-zinc-400 truncate">${artist}</p>
+                            </div>
+                            <div class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white shrink-0">
+                                <svg class="w-4 h-4 ml-0.5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                            </div>
+                        </div>`;
+                    }).join('');
                 } else {
-                    alert("Could not find audio streams for this album.");
-                    closeArtist();
+                    resultsDiv.innerHTML = '<div class="text-zinc-500 col-span-full">No songs found.</div>';
                 }
             } catch (err) {
-                console.error("Album search failed:", err);
-                alert("Search failed. Check F12 console.");
-                closeArtist();
+                resultsDiv.innerHTML = '<div class="text-red-500 col-span-full">Search failed. API might be unreachable.</div>';
             }
         }
 
-        // PLAYBACK LOGIC
-        async function playSong(streamId, title, artist, thumbnail) {
-            // UI Updates...
+        // --- DATABASE STATS ---
+        async function loadDbStats() {
+            try {
+                const res = await fetch(`${WORKER_URL}/api/db/stats`);
+                const data = await res.json();
+                
+                const renderListItem = (item) => `
+                    <div class="flex items-center gap-4 bg-zinc-900/50 p-3 rounded-xl hover:bg-zinc-800 transition cursor-pointer border border-white/5" 
+                         onclick="playSong('${item.stream_id}', '${item.title.replace(/'/g, "\\'")}', '${item.artist.replace(/'/g, "\\'")}', '${item.thumbnail}', null, true)">
+                        <img src="${item.thumbnail}" class="w-12 h-12 rounded-lg object-cover">
+                        <div class="flex-1 min-w-0">
+                            <h4 class="text-sm font-bold text-white truncate">${item.title}</h4>
+                            <p class="text-xs text-zinc-400 truncate">${item.artist}</p>
+                        </div>
+                    </div>`;
+
+                // Render recent jump-back-in cards for Home view
+                if(data.recent && data.recent.length > 0) {
+                    document.getElementById('home-recent').innerHTML = data.recent.map(item => `
+                    <div class="group cursor-pointer" onclick="playSong('${item.stream_id}', '${item.title.replace(/'/g, "\\'")}', '${item.artist.replace(/'/g, "\\'")}', '${item.thumbnail}', null, true)">
+                        <div class="relative aspect-square rounded-xl overflow-hidden mb-3 border border-white/5">
+                            <img src="${item.thumbnail}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                            <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                                <div class="w-12 h-12 bg-white text-black rounded-full flex items-center justify-center shadow-lg">
+                                    <svg class="w-6 h-6 ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                                </div>
+                            </div>
+                        </div>
+                        <h3 class="font-semibold text-sm text-white truncate">${item.title}</h3>
+                        <p class="text-xs text-zinc-400 mt-0.5 truncate">${item.artist}</p>
+                    </div>`).join('');
+                }
+
+                if(data.top && data.top.length > 0) {
+                    document.getElementById('library-top').innerHTML = data.top.map(renderListItem).join('');
+                }
+            } catch (e) { console.log("DB Stats Error", e); }
+        }
+
+        // --- PLAYBACK LOGIC ---
+        function updatePlayerIcon(state) {
+            document.getElementById('icon-play').classList.add('hidden');
+            document.getElementById('icon-pause').classList.add('hidden');
+            document.getElementById('icon-loading').classList.add('hidden');
+            document.getElementById(`icon-${state}`).classList.remove('hidden');
+        }
+
+        // isDbPlay indicates we are playing from library where we only have the ID and need to fetch the URL again.
+        async function playSong(id, title, artist, img, directUrl = null, isDbPlay = false) {
+            document.getElementById('player-bar').classList.remove('hidden');
             document.getElementById('player-title').innerText = title;
             document.getElementById('player-artist').innerText = artist;
-            document.getElementById('play-btn').innerText = '⏳';
-        
-            const data = await apiFetch(`/api/stream?id=${streamId}`);
+            document.getElementById('player-img').src = img;
             
-            if (data && data.url) {
-                audio.src = data.url;
-                audio.play().catch(e => console.error("Playback failed:", e));
-                document.getElementById('play-btn').innerText = '⏸';
+            updatePlayerIcon('loading');
+            
+            let finalUrl = directUrl;
+
+            // If we only have the ID (playing from history), we must fetch the direct URL via search
+            if (isDbPlay || !finalUrl) {
+                try {
+                    // Quick proxy trick: search by exact song ID via saavn API 
+                    // Technically saavn.dev has a /songs endpoint, but let's use the search query safely
+                    const res = await fetch(`${WORKER_URL}/api/search?q=${encodeURIComponent(title + " " + artist)}`);
+                    const data = await res.json();
+                    const song = data.data.results[0]; // grab top match
+                    if(song && song.downloadUrl) {
+                        finalUrl = song.downloadUrl[song.downloadUrl.length - 1].url;
+                    }
+                } catch(e) { console.error("Could not resolve DB song", e); }
+            }
+
+            if (finalUrl) {
+                audio.src = finalUrl;
+                audio.play().catch(e => { alert("Playback blocked by browser. Tap play again."); updatePlayerIcon('play'); });
                 
-                // Log to DB
+                // Save to Database Background
                 fetch(`${WORKER_URL}/api/db/play`, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ title, artist, thumbnail, stream_id: streamId })
+                    body: JSON.stringify({ title, artist, thumbnail: img, stream_id: id })
                 });
             } else {
-                alert("Failed to get audio stream. Try another song.");
-                document.getElementById('play-btn').innerText = '▶';
+                alert("Failed to find stream for this track.");
+                updatePlayerIcon('play');
             }
         }
 
         function togglePlay() {
-            if (audio.paused) { audio.play(); document.getElementById('play-btn').innerText = '⏸'; isPlaying = true; } 
-            else { audio.pause(); document.getElementById('play-btn').innerText = '▶'; isPlaying = false; }
+            if (audio.paused) { 
+                audio.play(); 
+            } else { 
+                audio.pause(); 
+            }
         }
 
-        audio.addEventListener('ended', () => { document.getElementById('play-btn').innerText = '▶'; isPlaying = false; });
+        audio.addEventListener('play', () => updatePlayerIcon('pause'));
+        audio.addEventListener('pause', () => updatePlayerIcon('play'));
+        audio.addEventListener('ended', () => updatePlayerIcon('play'));
 
-        // Initialize Home Data
+        // Progress bar updater
+        audio.addEventListener('timeupdate', () => {
+            if(audio.duration) {
+                const percent = (audio.currentTime / audio.duration) * 100;
+                document.getElementById('progress-bar').style.width = `${percent}%`;
+            }
+        });
+
+        // Init App
+        loadHomeData();
         loadDbStats();
     </script>
 </body>
