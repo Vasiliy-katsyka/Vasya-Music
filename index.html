@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Vasya Music</title>
-    <link rel="manifest" href="/manifest.json">
+    <link rel="manifest" href="manifest.json">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         /* Hide scrollbar for clean UI */
@@ -214,17 +214,26 @@
 
         // MAPPING ITUNES ALBUM TO PIPED STREAM
         async function playAlbumTrack(artist, album, artwork) {
-            // To keep it simple, if user clicks album, we search and play the top track from that album via Worker
-            document.getElementById('modal-albums').innerHTML = '<div class="text-blue-400 animate-pulse">Finding audio streams...</div>';
+            document.getElementById('modal-albums').innerHTML = '<div class="text-blue-400 animate-pulse">Finding official audio...</div>';
             const query = `${artist} ${album}`;
             
-            const res = await fetch(`${WORKER_URL}/api/search?q=${encodeURIComponent(query)}`);
-            const data = await res.json();
-            const topTrack = data.items[0]; // Get first result
-            
-            if(topTrack) {
-                const streamId = topTrack.url.split('=')[1];
-                playSong(streamId, topTrack.title, artist, artwork);
+            try {
+                const res = await fetch(`${WORKER_URL}/api/search?q=${encodeURIComponent(query)}`);
+                const data = await res.json();
+                
+                // SAFETY CHECK: Ensure data and data.items exist before trying to play!
+                if (data && data.items && data.items.length > 0) {
+                    const topTrack = data.items[0];
+                    const streamId = topTrack.url.split('=')[1];
+                    playSong(streamId, topTrack.title, artist, artwork);
+                    closeArtist();
+                } else {
+                    alert("Could not find audio streams for this album.");
+                    closeArtist();
+                }
+            } catch (err) {
+                console.error("Album search failed:", err);
+                alert("Search failed. Check F12 console.");
                 closeArtist();
             }
         }
