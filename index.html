@@ -32,14 +32,12 @@
 </head>
 <body class="bg-appBase text-white font-sans antialiased relative min-h-screen pb-32 md:pb-24 flex flex-col">
 
-    <!-- Ambient Background -->
     <div class="fixed top-[-10%] left-[-10%] w-[50vw] h-[50vw] rounded-full bg-blue-900/20 blur-[120px] pointer-events-none z-0"></div>
     <div class="fixed top-[20%] right-[-10%] w-[40vw] h-[40vw] rounded-full bg-purple-900/10 blur-[100px] pointer-events-none z-0"></div>
 
     <audio id="audio-element"></audio>
 
     <div class="flex h-full w-full relative z-10 max-w-[1600px] mx-auto flex-1">
-        <!-- DESKTOP SIDEBAR -->
         <aside class="hidden md:flex flex-col w-64 h-screen sticky top-0 border-r border-white/5 bg-appBase/50 backdrop-blur-xl p-6">
             <h1 class="text-2xl font-extrabold tracking-tighter text-gradient mb-10">Vasya Music</h1>
             <nav class="space-y-4 flex-1">
@@ -57,12 +55,11 @@
                 </button>
                 <button onclick="nav('profile')" class="w-full flex items-center gap-4 text-zinc-400 font-medium hover:text-blue-400 transition nav-btn" data-target="profile">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/></svg>
-                    Profile & Stats
+                    Profile
                 </button>
             </nav>
         </aside>
 
-        <!-- MAIN CONTENT -->
         <main class="flex-1 min-w-0 w-full relative">
             <header class="md:hidden sticky top-0 z-30 px-5 pt-12 pb-4 glass-panel border-b-0 border-white/5 flex justify-between items-center">
                 <h1 class="text-2xl font-extrabold tracking-tighter text-gradient">Vasya Music</h1>
@@ -71,7 +68,7 @@
             <div class="p-5 md:p-10">
                 <!-- HOME VIEW -->
                 <div id="view-home" class="view-section animate-fade-in">
-                    <h2 class="text-2xl md:text-3xl font-bold mb-6 tracking-tight text-white/90">Global Top Hits</h2>
+                    <h2 class="text-2xl md:text-3xl font-bold mb-6 tracking-tight text-white/90">Global Top Tracks</h2>
                     <div id="home-new-releases" class="flex gap-4 overflow-x-auto snap-x pb-6 -mx-5 px-5 md:mx-0 md:px-0 scroll-smooth">
                         <div class="text-zinc-500 animate-pulse">Loading amazing music...</div>
                     </div>
@@ -126,13 +123,13 @@
 
                 <!-- LIBRARY VIEW -->
                 <div id="view-library" class="view-section hidden animate-fade-in">
-                    <h2 class="text-2xl md:text-3xl font-bold mb-6 tracking-tight text-white/90">Your Listening History</h2>
+                    <h2 class="text-2xl md:text-3xl font-bold mb-6 tracking-tight text-white/90">Listening History</h2>
                     <div id="library-top" class="flex flex-col gap-3">
                         <div class="text-zinc-500">Your played tracks will appear here.</div>
                     </div>
                 </div>
 
-                <!-- PROFILE & STATS VIEW -->
+                <!-- PROFILE VIEW -->
                 <div id="view-profile" class="view-section hidden animate-fade-in">
                     <h2 class="text-2xl md:text-3xl font-bold mb-6 tracking-tight text-white/90">Statistics</h2>
                     
@@ -143,7 +140,7 @@
                         </div>
                     </div>
 
-                    <h3 class="text-2xl font-bold mb-4 text-white/90">Your Top Artists</h3>
+                    <h3 class="text-2xl font-bold mb-4 text-white/90">Top Artists</h3>
                     <div id="stat-artists" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-10">
                         <div class="text-zinc-500">Play more music to see your top artists.</div>
                     </div>
@@ -152,9 +149,8 @@
         </main>
     </div>
 
-    <!-- BOTTOM FLOATING PLAYER (MINI PLAYER) -->
+    <!-- MINI PLAYER -->
     <div id="player-bar" class="hidden fixed bottom-[88px] md:bottom-8 left-4 right-4 md:left-1/2 md:-translate-x-1/2 md:w-[600px] glass-panel rounded-2xl p-2 md:p-3 flex items-center justify-between shadow-2xl z-40 transition-all duration-300">
-        <!-- Clicking the left side opens Full Player -->
         <div class="flex items-center gap-3 overflow-hidden w-[60%] group cursor-pointer" onclick="toggleFullPlayer()">
             <div class="relative w-12 h-12 md:w-14 md:h-14 shrink-0 rounded-lg overflow-hidden shadow-md">
                 <img id="player-img" src="" class="w-full h-full object-cover">
@@ -178,28 +174,24 @@
         </div>
     </div>
 
-    <!-- FULL SCREEN PLAYER OVERLAY -->
+    <!-- FULL PLAYER -->
     <div id="full-player" class="fixed inset-0 z-50 bg-zinc-950 translate-y-full transition-transform duration-500 flex flex-col items-center justify-start overflow-y-auto pb-10">
-        <!-- Close Button -->
         <div class="w-full p-6 flex justify-between items-center sticky top-0 bg-zinc-950/80 backdrop-blur-md z-10">
             <button onclick="toggleFullPlayer()" class="text-zinc-400 hover:text-white p-2">
                 <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
             </button>
             <span class="text-xs font-semibold text-zinc-500 tracking-widest uppercase">Now Playing</span>
-            <div class="w-12"></div> <!-- Spacer -->
+            <div class="w-12"></div>
         </div>
 
         <div class="w-full max-w-lg px-8 flex flex-col items-center mt-4">
-            <!-- Artwork -->
             <img id="fp-img" src="" class="w-full aspect-square object-cover rounded-3xl shadow-2xl mb-8 border border-white/10">
             
-            <!-- Info -->
             <div class="w-full text-center mb-8">
                 <h2 id="fp-title" class="text-2xl font-bold text-white mb-2">Title</h2>
                 <p id="fp-artist" class="text-lg text-blue-400 cursor-pointer" onclick="toggleFullPlayer(); openArtist(currentArtistId)"></p>
             </div>
 
-            <!-- Scrubber -->
             <div class="w-full mb-8">
                 <div class="flex justify-between text-xs text-zinc-400 mb-2 font-medium">
                     <span id="fp-time-current">0:00</span>
@@ -210,7 +202,6 @@
                 </div>
             </div>
 
-            <!-- Controls -->
             <div class="w-full flex justify-center items-center gap-8 mb-12">
                 <button onclick="togglePlay()" class="w-20 h-20 bg-blue-500 text-white rounded-full flex items-center justify-center hover:scale-105 active:scale-95 transition-transform shadow-[0_0_30px_rgba(59,130,246,0.5)]">
                     <svg id="fp-icon-play" class="w-10 h-10 ml-2 hidden" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
@@ -219,7 +210,6 @@
                 </button>
             </div>
 
-            <!-- Lyrics -->
             <div class="w-full bg-zinc-900/50 border border-white/5 rounded-3xl p-6">
                 <h3 class="text-xl font-bold mb-4 text-white/80 text-center">Lyrics</h3>
                 <div id="lyrics-container" class="lyrics-box text-zinc-400">Loading lyrics...</div>
@@ -227,7 +217,7 @@
         </div>
     </div>
 
-    <!-- MOBILE BOTTOM NAVIGATION -->
+    <!-- MOBILE NAV -->
     <nav class="md:hidden fixed bottom-0 left-0 w-full glass-panel border-t border-white/5 pb-safe z-30">
         <div class="flex justify-around items-center h-[72px] px-2">
             <button onclick="nav('home')" class="flex flex-col items-center justify-center w-full h-full gap-1 text-zinc-400 hover:text-white nav-btn" data-target="home">
@@ -259,7 +249,6 @@
             document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
             document.getElementById(`view-${viewId}`).classList.remove('hidden');
             
-            // Highlight active nav buttons
             document.querySelectorAll('.nav-btn').forEach(el => {
                 if(el.dataset.target === viewId) {
                     el.classList.add('text-blue-400', 'text-white');
@@ -307,7 +296,7 @@
                     document.getElementById('home-new-releases').innerHTML = html;
                 }
             } catch (e) {
-                document.getElementById('home-new-releases').innerHTML = '<span class="text-red-400">Failed to load trending music. API busy.</span>';
+                document.getElementById('home-new-releases').innerHTML = '<span class="text-red-400">Failed to load trending music.</span>';
             }
         }
 
@@ -331,7 +320,6 @@
                 const res = await fetch(`${WORKER_URL}/api/search?q=${encodeURIComponent(query)}`);
                 const data = await res.json();
                 
-                // Render Artists
                 if (data.artists && data.artists.length > 0) {
                     document.getElementById('search-results-artists').classList.remove('hidden');
                     sArtists.innerHTML = data.artists.map(a => `
@@ -345,7 +333,6 @@
                     `).join('');
                 }
 
-                // Render Songs
                 if (data.songs && data.songs.length > 0) {
                     sSongs.innerHTML = data.songs.map(s => `
                         <div class="flex items-center gap-4 bg-zinc-900/50 p-3 rounded-xl hover:bg-zinc-800 transition cursor-pointer border border-white/5" 
@@ -371,7 +358,7 @@
             if(!id) return;
             nav('artist');
             document.getElementById('artist-name').innerText = "Loading...";
-            document.getElementById('artist-img').src = "https://placehold.co/500x500/18181b/ffffff?text=Artist";
+            document.getElementById('artist-img').src = "https://placehold.co/500";
             document.getElementById('artist-top-songs').innerHTML = "<div class='animate-pulse text-zinc-500'>Loading...</div>";
             document.getElementById('artist-albums').innerHTML = "";
 
@@ -403,13 +390,11 @@
                                 <img src="${a.thumbnail}" class="w-full h-full object-cover">
                             </div>
                             <h4 class="text-sm font-bold text-white truncate">${a.title}</h4>
-                            <p class="text-xs text-zinc-500">${a.year || 'Album'}</p>
+                            <p class="text-xs text-zinc-500">${a.year}</p>
                         </div>
                     `).join('');
                 }
-            } catch(e) {
-                console.error(e);
-            }
+            } catch(e) { console.error(e); }
         }
 
         async function loadDbStats() {
@@ -429,7 +414,6 @@
                     
                     document.getElementById('library-top').innerHTML = html;
                     
-                    // Populate home recent with grid view
                     const gridHtml = data.recent.slice(0, 5).map(item => `
                     <div class="group cursor-pointer" onclick="playSong('${item.stream_id}', '${escape(item.title)}', '${escape(item.artist)}', '${item.thumbnail}', '${item.artistId}')">
                         <div class="relative aspect-square rounded-xl overflow-hidden mb-2 border border-white/5">
@@ -495,12 +479,10 @@
             document.getElementById('player-bar').classList.remove('hidden');
             currentArtistId = artistId;
             
-            // Set UI Mini Player
             document.getElementById('player-title').innerText = title;
             document.getElementById('player-artist').innerText = artist;
             document.getElementById('player-img').src = img;
 
-            // Set UI Full Player
             document.getElementById('fp-title').innerText = title;
             document.getElementById('fp-artist').innerText = artist;
             document.getElementById('fp-img').src = img;
@@ -569,7 +551,6 @@
             }
         });
 
-        // Initialize App
         loadHomeData();
         loadDbStats();
         nav('home');
