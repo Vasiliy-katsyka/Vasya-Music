@@ -27,10 +27,12 @@
             background-image: linear-gradient(90deg, #60a5fa, #a78bfa);
         }
         .glass-panel { background: rgba(24, 24, 27, 0.6); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.05); }
+        .lyrics-box { white-space: pre-wrap; text-align: center; line-height: 2; font-size: 1.1rem; }
     </style>
 </head>
 <body class="bg-appBase text-white font-sans antialiased relative min-h-screen pb-32 md:pb-24 flex flex-col">
 
+    <!-- Ambient Background -->
     <div class="fixed top-[-10%] left-[-10%] w-[50vw] h-[50vw] rounded-full bg-blue-900/20 blur-[120px] pointer-events-none z-0"></div>
     <div class="fixed top-[20%] right-[-10%] w-[40vw] h-[40vw] rounded-full bg-purple-900/10 blur-[100px] pointer-events-none z-0"></div>
 
@@ -41,22 +43,26 @@
         <aside class="hidden md:flex flex-col w-64 h-screen sticky top-0 border-r border-white/5 bg-appBase/50 backdrop-blur-xl p-6">
             <h1 class="text-2xl font-extrabold tracking-tighter text-gradient mb-10">Vasya Music</h1>
             <nav class="space-y-4 flex-1">
-                <button onclick="nav('home')" class="w-full flex items-center gap-4 text-white font-semibold hover:text-blue-400 transition">
+                <button onclick="nav('home')" class="w-full flex items-center gap-4 text-white font-semibold hover:text-blue-400 transition nav-btn" data-target="home">
                     <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M11.47 3.84a.75.75 0 011.06 0l8.69 8.69a.75.75 0 101.06-1.06l-8.689-8.69a2.25 2.25 0 00-3.182 0l-8.69 8.69a.75.75 0 001.061 1.06l8.69-8.69z"/><path d="M12 5.432l8.159 8.159c.03.03.06.058.091.086v6.198c0 1.035-.84 1.875-1.875 1.875H15a.75.75 0 01-.75-.75v-4.5a.75.75 0 00-.75-.75h-3a.75.75 0 00-.75.75V21a.75.75 0 01-.75.75H5.625a1.875 1.875 0 01-1.875-1.875v-6.198a2.29 2.29 0 00.091-.086L12 5.43z"/></svg>
                     Home
                 </button>
-                <button onclick="nav('search')" class="w-full flex items-center gap-4 text-zinc-400 font-medium hover:text-blue-400 transition">
+                <button onclick="nav('search')" class="w-full flex items-center gap-4 text-zinc-400 font-medium hover:text-blue-400 transition nav-btn" data-target="search">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/></svg>
                     Search
                 </button>
-                <button onclick="nav('library')" class="w-full flex items-center gap-4 text-zinc-400 font-medium hover:text-blue-400 transition">
+                <button onclick="nav('library')" class="w-full flex items-center gap-4 text-zinc-400 font-medium hover:text-blue-400 transition nav-btn" data-target="library">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 010 3.75H5.625a1.875 1.875 0 010-3.75z"/></svg>
                     Library
+                </button>
+                <button onclick="nav('profile')" class="w-full flex items-center gap-4 text-zinc-400 font-medium hover:text-blue-400 transition nav-btn" data-target="profile">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/></svg>
+                    Profile & Stats
                 </button>
             </nav>
         </aside>
 
-        <!-- MAIN SCROLLABLE CONTENT -->
+        <!-- MAIN CONTENT -->
         <main class="flex-1 min-w-0 w-full relative">
             <header class="md:hidden sticky top-0 z-30 px-5 pt-12 pb-4 glass-panel border-b-0 border-white/5 flex justify-between items-center">
                 <h1 class="text-2xl font-extrabold tracking-tighter text-gradient">Vasya Music</h1>
@@ -65,7 +71,7 @@
             <div class="p-5 md:p-10">
                 <!-- HOME VIEW -->
                 <div id="view-home" class="view-section animate-fade-in">
-                    <h2 class="text-2xl md:text-3xl font-bold mb-6 tracking-tight text-white/90">Trending Releases</h2>
+                    <h2 class="text-2xl md:text-3xl font-bold mb-6 tracking-tight text-white/90">Global Top Hits</h2>
                     <div id="home-new-releases" class="flex gap-4 overflow-x-auto snap-x pb-6 -mx-5 px-5 md:mx-0 md:px-0 scroll-smooth">
                         <div class="text-zinc-500 animate-pulse">Loading amazing music...</div>
                     </div>
@@ -80,62 +86,165 @@
                 <div id="view-search" class="view-section hidden animate-fade-in">
                     <h2 class="text-2xl md:text-3xl font-bold mb-6 tracking-tight text-white/90">Search</h2>
                     <div class="relative mb-8">
-                        <input type="text" id="search-input" placeholder="Search songs or artists..." class="w-full bg-zinc-900 border border-zinc-800 rounded-xl py-4 pl-12 pr-4 text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition shadow-lg text-lg">
+                        <input type="text" id="search-input" placeholder="Search songs, artists, albums..." class="w-full bg-zinc-900 border border-zinc-800 rounded-xl py-4 pl-12 pr-4 text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition shadow-lg text-lg">
                         <svg class="w-6 h-6 absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/></svg>
                     </div>
-                    <div id="search-results" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+                    
+                    <div id="search-results-artists" class="mb-8 hidden">
+                        <h3 class="text-xl font-bold mb-4 text-white/80">Artists</h3>
+                        <div class="flex gap-4 overflow-x-auto pb-4 -mx-5 px-5 md:mx-0 md:px-0" id="search-artists-container"></div>
+                    </div>
+
+                    <div id="search-results-songs" class="mb-8">
+                        <h3 class="text-xl font-bold mb-4 text-white/80 hidden" id="search-songs-title">Songs</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="search-songs-container"></div>
+                    </div>
+                </div>
+
+                <!-- ARTIST PROFILE VIEW -->
+                <div id="view-artist" class="view-section hidden animate-fade-in">
+                    <button onclick="nav('search')" class="text-blue-400 mb-6 flex items-center gap-2 hover:text-blue-300">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+                        Back
+                    </button>
+                    <div id="artist-header" class="flex items-center gap-6 mb-10">
+                        <div class="w-32 h-32 md:w-48 md:h-48 rounded-full overflow-hidden border-4 border-white/10 shadow-2xl shrink-0">
+                            <img id="artist-img" src="" class="w-full h-full object-cover">
+                        </div>
+                        <div>
+                            <h2 id="artist-name" class="text-4xl md:text-6xl font-extrabold tracking-tighter mb-2"></h2>
+                            <p class="text-zinc-400 text-lg">Artist Profile</p>
+                        </div>
+                    </div>
+
+                    <h3 class="text-2xl font-bold mb-4 text-white/90">Top Songs</h3>
+                    <div id="artist-top-songs" class="flex flex-col gap-3 mb-10"></div>
+
+                    <h3 class="text-2xl font-bold mb-4 text-white/90">Albums</h3>
+                    <div id="artist-albums" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"></div>
                 </div>
 
                 <!-- LIBRARY VIEW -->
                 <div id="view-library" class="view-section hidden animate-fade-in">
-                    <h2 class="text-2xl md:text-3xl font-bold mb-6 tracking-tight text-white/90">Your Top Tracks</h2>
+                    <h2 class="text-2xl md:text-3xl font-bold mb-6 tracking-tight text-white/90">Your Listening History</h2>
                     <div id="library-top" class="flex flex-col gap-3">
-                        <div class="text-zinc-500">Your most played tracks will appear here.</div>
+                        <div class="text-zinc-500">Your played tracks will appear here.</div>
+                    </div>
+                </div>
+
+                <!-- PROFILE & STATS VIEW -->
+                <div id="view-profile" class="view-section hidden animate-fade-in">
+                    <h2 class="text-2xl md:text-3xl font-bold mb-6 tracking-tight text-white/90">Statistics</h2>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+                        <div class="glass-panel p-6 rounded-2xl text-center shadow-lg">
+                            <h3 class="text-zinc-400 text-sm font-semibold uppercase tracking-wider mb-2">Total Plays</h3>
+                            <p id="stat-total" class="text-5xl font-extrabold text-blue-400">0</p>
+                        </div>
+                    </div>
+
+                    <h3 class="text-2xl font-bold mb-4 text-white/90">Your Top Artists</h3>
+                    <div id="stat-artists" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-10">
+                        <div class="text-zinc-500">Play more music to see your top artists.</div>
                     </div>
                 </div>
             </div>
         </main>
     </div>
 
-    <!-- FLOATING PLAYER -->
+    <!-- BOTTOM FLOATING PLAYER (MINI PLAYER) -->
     <div id="player-bar" class="hidden fixed bottom-[88px] md:bottom-8 left-4 right-4 md:left-1/2 md:-translate-x-1/2 md:w-[600px] glass-panel rounded-2xl p-2 md:p-3 flex items-center justify-between shadow-2xl z-40 transition-all duration-300">
-        <div class="flex items-center gap-3 overflow-hidden w-[60%] group">
+        <!-- Clicking the left side opens Full Player -->
+        <div class="flex items-center gap-3 overflow-hidden w-[60%] group cursor-pointer" onclick="toggleFullPlayer()">
             <div class="relative w-12 h-12 md:w-14 md:h-14 shrink-0 rounded-lg overflow-hidden shadow-md">
                 <img id="player-img" src="" class="w-full h-full object-cover">
             </div>
-            <div class="truncate">
+            <div class="truncate text-left">
                 <h4 id="player-title" class="text-sm md:text-base font-bold text-white truncate group-hover:text-blue-400 transition">Song Title</h4>
-                <p id="player-artist" class="text-xs md:text-sm text-zinc-400 truncate">Artist Name</p>
+                <p id="player-artist" class="text-xs md:text-sm text-zinc-400 truncate hover:text-white transition inline-block" onclick="event.stopPropagation(); openArtist(currentArtistId)"></p>
             </div>
         </div>
 
         <div class="flex items-center gap-2 md:gap-4 pr-2">
-            <button onclick="togglePlay()" class="w-10 h-10 md:w-12 md:h-12 bg-white text-black rounded-full flex items-center justify-center hover:scale-105 active:scale-95 transition-transform shadow-lg">
+            <button onclick="togglePlay()" class="w-10 h-10 md:w-12 md:h-12 bg-white text-black rounded-full flex items-center justify-center hover:scale-105 active:scale-95 transition-transform shadow-lg shrink-0">
                 <svg id="icon-play" class="w-5 h-5 ml-1 hidden" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
                 <svg id="icon-pause" class="w-5 h-5 hidden" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
                 <svg id="icon-loading" class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
             </button>
         </div>
         
-        <div class="absolute bottom-0 left-4 right-4 h-[3px] bg-white/10 rounded-full overflow-hidden">
-            <div id="progress-bar" class="h-full bg-blue-500 w-0 rounded-full transition-all duration-100 ease-linear"></div>
+        <div class="absolute bottom-0 left-4 right-4 h-[3px] bg-white/10 rounded-full overflow-hidden cursor-pointer" onclick="seekAudio(event)">
+            <div id="progress-bar" class="h-full bg-blue-500 w-0 rounded-full transition-all duration-100 ease-linear pointer-events-none"></div>
+        </div>
+    </div>
+
+    <!-- FULL SCREEN PLAYER OVERLAY -->
+    <div id="full-player" class="fixed inset-0 z-50 bg-zinc-950 translate-y-full transition-transform duration-500 flex flex-col items-center justify-start overflow-y-auto pb-10">
+        <!-- Close Button -->
+        <div class="w-full p-6 flex justify-between items-center sticky top-0 bg-zinc-950/80 backdrop-blur-md z-10">
+            <button onclick="toggleFullPlayer()" class="text-zinc-400 hover:text-white p-2">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            </button>
+            <span class="text-xs font-semibold text-zinc-500 tracking-widest uppercase">Now Playing</span>
+            <div class="w-12"></div> <!-- Spacer -->
+        </div>
+
+        <div class="w-full max-w-lg px-8 flex flex-col items-center mt-4">
+            <!-- Artwork -->
+            <img id="fp-img" src="" class="w-full aspect-square object-cover rounded-3xl shadow-2xl mb-8 border border-white/10">
+            
+            <!-- Info -->
+            <div class="w-full text-center mb-8">
+                <h2 id="fp-title" class="text-2xl font-bold text-white mb-2">Title</h2>
+                <p id="fp-artist" class="text-lg text-blue-400 cursor-pointer" onclick="toggleFullPlayer(); openArtist(currentArtistId)"></p>
+            </div>
+
+            <!-- Scrubber -->
+            <div class="w-full mb-8">
+                <div class="flex justify-between text-xs text-zinc-400 mb-2 font-medium">
+                    <span id="fp-time-current">0:00</span>
+                    <span id="fp-time-total">0:00</span>
+                </div>
+                <div class="h-2 bg-zinc-800 rounded-full cursor-pointer relative" onclick="seekAudio(event)">
+                    <div id="fp-progress" class="absolute left-0 top-0 h-full bg-white rounded-full pointer-events-none" style="width: 0%;"></div>
+                </div>
+            </div>
+
+            <!-- Controls -->
+            <div class="w-full flex justify-center items-center gap-8 mb-12">
+                <button onclick="togglePlay()" class="w-20 h-20 bg-blue-500 text-white rounded-full flex items-center justify-center hover:scale-105 active:scale-95 transition-transform shadow-[0_0_30px_rgba(59,130,246,0.5)]">
+                    <svg id="fp-icon-play" class="w-10 h-10 ml-2 hidden" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                    <svg id="fp-icon-pause" class="w-10 h-10 hidden" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+                    <svg id="fp-icon-loading" class="w-10 h-10 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                </button>
+            </div>
+
+            <!-- Lyrics -->
+            <div class="w-full bg-zinc-900/50 border border-white/5 rounded-3xl p-6">
+                <h3 class="text-xl font-bold mb-4 text-white/80 text-center">Lyrics</h3>
+                <div id="lyrics-container" class="lyrics-box text-zinc-400">Loading lyrics...</div>
+            </div>
         </div>
     </div>
 
     <!-- MOBILE BOTTOM NAVIGATION -->
     <nav class="md:hidden fixed bottom-0 left-0 w-full glass-panel border-t border-white/5 pb-safe z-30">
         <div class="flex justify-around items-center h-[72px] px-2">
-            <button onclick="nav('home')" class="flex flex-col items-center justify-center w-full h-full gap-1 text-white hover:text-blue-400">
+            <button onclick="nav('home')" class="flex flex-col items-center justify-center w-full h-full gap-1 text-zinc-400 hover:text-white nav-btn" data-target="home">
                 <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M11.47 3.84a.75.75 0 011.06 0l8.69 8.69a.75.75 0 101.06-1.06l-8.689-8.69a2.25 2.25 0 00-3.182 0l-8.69 8.69a.75.75 0 001.061 1.06l8.69-8.69z"/><path d="M12 5.432l8.159 8.159c.03.03.06.058.091.086v6.198c0 1.035-.84 1.875-1.875 1.875H15a.75.75 0 01-.75-.75v-4.5a.75.75 0 00-.75-.75h-3a.75.75 0 00-.75.75V21a.75.75 0 01-.75.75H5.625a1.875 1.875 0 01-1.875-1.875v-6.198a2.29 2.29 0 00.091-.086L12 5.43z"/></svg>
                 <span class="text-[10px] font-semibold">Home</span>
             </button>
-            <button onclick="nav('search')" class="flex flex-col items-center justify-center w-full h-full gap-1 text-zinc-400 hover:text-blue-400 transition">
+            <button onclick="nav('search')" class="flex flex-col items-center justify-center w-full h-full gap-1 text-zinc-400 hover:text-white nav-btn" data-target="search">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/></svg>
                 <span class="text-[10px] font-semibold">Search</span>
             </button>
-            <button onclick="nav('library')" class="flex flex-col items-center justify-center w-full h-full gap-1 text-zinc-400 hover:text-blue-400 transition">
+            <button onclick="nav('library')" class="flex flex-col items-center justify-center w-full h-full gap-1 text-zinc-400 hover:text-white nav-btn" data-target="library">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 010 3.75H5.625a1.875 1.875 0 010-3.75z"/></svg>
                 <span class="text-[10px] font-semibold">Library</span>
+            </button>
+            <button onclick="nav('profile')" class="flex flex-col items-center justify-center w-full h-full gap-1 text-zinc-400 hover:text-white nav-btn" data-target="profile">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/></svg>
+                <span class="text-[10px] font-semibold">Profile</span>
             </button>
         </div>
     </nav>
@@ -143,28 +252,47 @@
 <script>
         const WORKER_URL = "https://vasya-music.kviappsgames.workers.dev";
         const audio = document.getElementById('audio-element');
+        let currentArtistId = "";
+        let isFullPlayerOpen = false;
 
         function nav(viewId) {
             document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
             document.getElementById(`view-${viewId}`).classList.remove('hidden');
+            
+            // Highlight active nav buttons
+            document.querySelectorAll('.nav-btn').forEach(el => {
+                if(el.dataset.target === viewId) {
+                    el.classList.add('text-blue-400', 'text-white');
+                    el.classList.remove('text-zinc-400');
+                } else {
+                    el.classList.remove('text-blue-400', 'text-white');
+                    el.classList.add('text-zinc-400');
+                }
+            });
+
             if(viewId === 'library' || viewId === 'home') loadDbStats();
+            if(viewId === 'profile') loadProfileStats();
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        // Helper to safely escape strings for HTML inserts
         function escape(str) {
             return (str || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+        }
+
+        function formatTime(seconds) {
+            if (isNaN(seconds)) return "0:00";
+            const m = Math.floor(seconds / 60);
+            const s = Math.floor(seconds % 60);
+            return `${m}:${s < 10 ? '0' : ''}${s}`;
         }
 
         async function loadHomeData() {
             try {
                 const res = await fetch(`${WORKER_URL}/api/home`);
                 const data = await res.json();
-                
-                // Backend returns an array directly, not data.data.results
                 if(Array.isArray(data) && data.length > 0) {
                     const html = data.map(s => `
-                        <div class="snap-start shrink-0 w-40 md:w-56 group cursor-pointer" onclick="playSong('${s.id}', '${escape(s.title)}', '${escape(s.artist)}', '${s.thumbnail}')">
+                        <div class="snap-start shrink-0 w-40 md:w-56 group cursor-pointer" onclick="playSong('${s.id}', '${escape(s.title)}', '${escape(s.artist)}', '${s.thumbnail}', '${s.artistId}')">
                             <div class="relative w-full aspect-square rounded-2xl overflow-hidden mb-3 shadow-2xl border border-white/5">
                                 <img src="${s.thumbnail}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
                                 <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
@@ -179,14 +307,12 @@
                     document.getElementById('home-new-releases').innerHTML = html;
                 }
             } catch (e) {
-                console.error("Home Load Error:", e);
-                document.getElementById('home-new-releases').innerHTML = '<span class="text-red-400">Failed to load trending music. API might be busy.</span>';
+                document.getElementById('home-new-releases').innerHTML = '<span class="text-red-400">Failed to load trending music. API busy.</span>';
             }
         }
 
         const searchInput = document.getElementById('search-input');
         let searchTimeout;
-
         searchInput.addEventListener('input', (e) => {
             clearTimeout(searchTimeout);
             searchTimeout = setTimeout(() => doSearch(e.target.value), 600);
@@ -194,17 +320,36 @@
 
         async function doSearch(query) {
             if(!query.trim()) return;
-            const resultsDiv = document.getElementById('search-results');
-            resultsDiv.innerHTML = '<div class="text-zinc-500 animate-pulse col-span-full">Searching global library...</div>';
+            const sSongs = document.getElementById('search-songs-container');
+            const sArtists = document.getElementById('search-artists-container');
             
+            sSongs.innerHTML = '<div class="text-zinc-500 animate-pulse col-span-full">Searching library...</div>';
+            document.getElementById('search-results-artists').classList.add('hidden');
+            document.getElementById('search-songs-title').classList.remove('hidden');
+
             try {
                 const res = await fetch(`${WORKER_URL}/api/search?q=${encodeURIComponent(query)}`);
                 const data = await res.json();
                 
-                if (Array.isArray(data) && data.length > 0) {
-                    resultsDiv.innerHTML = data.map(s => `
+                // Render Artists
+                if (data.artists && data.artists.length > 0) {
+                    document.getElementById('search-results-artists').classList.remove('hidden');
+                    sArtists.innerHTML = data.artists.map(a => `
+                        <div class="snap-start shrink-0 w-28 flex flex-col items-center group cursor-pointer" onclick="openArtist('${a.id}')">
+                            <div class="w-24 h-24 rounded-full overflow-hidden mb-2 border-2 border-transparent group-hover:border-blue-400 transition-all">
+                                <img src="${a.image}" class="w-full h-full object-cover">
+                            </div>
+                            <h4 class="text-sm font-bold text-white text-center truncate w-full">${a.name}</h4>
+                            <p class="text-xs text-zinc-500">Artist</p>
+                        </div>
+                    `).join('');
+                }
+
+                // Render Songs
+                if (data.songs && data.songs.length > 0) {
+                    sSongs.innerHTML = data.songs.map(s => `
                         <div class="flex items-center gap-4 bg-zinc-900/50 p-3 rounded-xl hover:bg-zinc-800 transition cursor-pointer border border-white/5" 
-                             onclick="playSong('${s.id}', '${escape(s.title)}', '${escape(s.artist)}', '${s.thumbnail}')">
+                             onclick="playSong('${s.id}', '${escape(s.title)}', '${escape(s.artist)}', '${s.thumbnail}', '${s.artistId}')">
                             <img src="${s.thumbnail}" class="w-14 h-14 rounded-lg object-cover shadow-md">
                             <div class="flex-1 min-w-0">
                                 <h4 class="text-sm font-bold text-white truncate">${s.title}</h4>
@@ -215,11 +360,55 @@
                             </div>
                         </div>`).join('');
                 } else {
-                    resultsDiv.innerHTML = '<div class="text-zinc-500 col-span-full">No songs found.</div>';
+                    sSongs.innerHTML = '<div class="text-zinc-500 col-span-full">No songs found.</div>';
                 }
             } catch (err) {
-                console.error(err);
-                resultsDiv.innerHTML = '<div class="text-red-500 col-span-full">Search failed. API unreachable.</div>';
+                sSongs.innerHTML = '<div class="text-red-500 col-span-full">Search failed.</div>';
+            }
+        }
+
+        async function openArtist(id) {
+            if(!id) return;
+            nav('artist');
+            document.getElementById('artist-name').innerText = "Loading...";
+            document.getElementById('artist-img').src = "https://placehold.co/500x500/18181b/ffffff?text=Artist";
+            document.getElementById('artist-top-songs').innerHTML = "<div class='animate-pulse text-zinc-500'>Loading...</div>";
+            document.getElementById('artist-albums').innerHTML = "";
+
+            try {
+                const res = await fetch(`${WORKER_URL}/api/artist?id=${id}`);
+                const data = await res.json();
+                
+                document.getElementById('artist-name').innerText = data.name;
+                document.getElementById('artist-img').src = data.image;
+
+                if(data.topSongs && data.topSongs.length > 0) {
+                    document.getElementById('artist-top-songs').innerHTML = data.topSongs.map((s, index) => `
+                        <div class="flex items-center gap-4 p-2 rounded-xl hover:bg-zinc-800/50 transition cursor-pointer"
+                             onclick="playSong('${s.id}', '${escape(s.title)}', '${escape(data.name)}', '${s.thumbnail}', '${id}')">
+                            <span class="text-zinc-600 font-bold w-4 text-right">${index + 1}</span>
+                            <img src="${s.thumbnail}" class="w-12 h-12 rounded-lg object-cover">
+                            <div class="flex-1 min-w-0">
+                                <h4 class="text-sm font-bold text-white truncate">${s.title}</h4>
+                            </div>
+                            <svg class="w-5 h-5 text-zinc-500" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                        </div>
+                    `).join('');
+                }
+
+                if(data.topAlbums && data.topAlbums.length > 0) {
+                    document.getElementById('artist-albums').innerHTML = data.topAlbums.map(a => `
+                        <div class="group">
+                            <div class="relative aspect-square rounded-xl overflow-hidden mb-2 border border-white/5">
+                                <img src="${a.thumbnail}" class="w-full h-full object-cover">
+                            </div>
+                            <h4 class="text-sm font-bold text-white truncate">${a.title}</h4>
+                            <p class="text-xs text-zinc-500">${a.year || 'Album'}</p>
+                        </div>
+                    `).join('');
+                }
+            } catch(e) {
+                console.error(e);
             }
         }
 
@@ -227,68 +416,116 @@
             try {
                 const res = await fetch(`${WORKER_URL}/api/db/stats`);
                 const data = await res.json();
-
                 if(data.recent && data.recent.length > 0) {
                     const html = data.recent.map(item => `
-                    <div class="group cursor-pointer" onclick="playSong('${item.stream_id}', '${escape(item.title)}', '${escape(item.artist)}', '${item.thumbnail}')">
-                        <div class="relative aspect-square rounded-xl overflow-hidden mb-3 border border-white/5">
-                            <img src="${item.thumbnail}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
-                            <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                                <div class="w-12 h-12 bg-white text-black rounded-full flex items-center justify-center shadow-lg">
-                                    <svg class="w-6 h-6 ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-                                </div>
+                    <div class="group cursor-pointer flex items-center gap-4 bg-zinc-900/40 p-2 rounded-xl hover:bg-zinc-800 transition" 
+                         onclick="playSong('${item.stream_id}', '${escape(item.title)}', '${escape(item.artist)}', '${item.thumbnail}', '${item.artistId}')">
+                        <img src="${item.thumbnail}" class="w-12 h-12 rounded-md object-cover">
+                        <div class="flex-1 min-w-0">
+                            <h3 class="font-semibold text-sm text-white truncate">${item.title}</h3>
+                            <p class="text-xs text-zinc-400 truncate">${item.artist}</p>
+                        </div>
+                    </div>`).join('');
+                    
+                    document.getElementById('library-top').innerHTML = html;
+                    
+                    // Populate home recent with grid view
+                    const gridHtml = data.recent.slice(0, 5).map(item => `
+                    <div class="group cursor-pointer" onclick="playSong('${item.stream_id}', '${escape(item.title)}', '${escape(item.artist)}', '${item.thumbnail}', '${item.artistId}')">
+                        <div class="relative aspect-square rounded-xl overflow-hidden mb-2 border border-white/5">
+                            <img src="${item.thumbnail}" class="w-full h-full object-cover">
+                            <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center">
+                                <div class="w-10 h-10 bg-white text-black rounded-full flex items-center justify-center"><svg class="w-5 h-5 ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
                             </div>
                         </div>
                         <h3 class="font-semibold text-sm text-white truncate">${item.title}</h3>
-                        <p class="text-xs text-zinc-400 mt-0.5 truncate">${item.artist}</p>
                     </div>`).join('');
-                    
-                    document.getElementById('home-recent').innerHTML = html;
-                    document.getElementById('library-top').innerHTML = html; // Reusing recent for library
+                    document.getElementById('home-recent').innerHTML = gridHtml;
                 }
-            } catch (e) { console.log("DB Stats missing or D1 Database not bound", e); }
+            } catch (e) {}
+        }
+
+        async function loadProfileStats() {
+            try {
+                const res = await fetch(`${WORKER_URL}/api/db/profile`);
+                const data = await res.json();
+                
+                document.getElementById('stat-total').innerText = data.total_plays || 0;
+                
+                if(data.top_artists && data.top_artists.length > 0) {
+                    document.getElementById('stat-artists').innerHTML = data.top_artists.map((a, i) => `
+                        <div class="flex items-center gap-4 bg-zinc-900/50 p-4 rounded-xl border border-white/5">
+                            <div class="text-2xl font-bold text-zinc-700 w-6">#${i+1}</div>
+                            <div class="flex-1">
+                                <h4 class="text-lg font-bold text-white">${a.artist}</h4>
+                                <p class="text-sm text-zinc-400">${a.c} plays</p>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            } catch(e){}
         }
 
         function updatePlayerIcon(state) {
-            document.getElementById('icon-play').classList.add('hidden');
-            document.getElementById('icon-pause').classList.add('hidden');
-            document.getElementById('icon-loading').classList.add('hidden');
+            ['play', 'pause', 'loading'].forEach(s => {
+                document.getElementById(`icon-${s}`).classList.add('hidden');
+                document.getElementById(`fp-icon-${s}`).classList.add('hidden');
+            });
             document.getElementById(`icon-${state}`).classList.remove('hidden');
+            document.getElementById(`fp-icon-${state}`).classList.remove('hidden');
         }
 
-        // Updated to fetch the audio stream FIRST, then play
-        async function playSong(id, title, artist, img) {
+        async function loadLyrics(id) {
+            const lc = document.getElementById('lyrics-container');
+            lc.innerText = "Loading lyrics...";
+            try {
+                const res = await fetch(`${WORKER_URL}/api/lyrics?id=${id}`);
+                const data = await res.json();
+                if(data.lyrics) {
+                    lc.innerHTML = data.lyrics.replace(/\n/g, '<br>');
+                } else {
+                    lc.innerText = "Lyrics not available for this track.";
+                }
+            } catch (e) {
+                lc.innerText = "Couldn't fetch lyrics.";
+            }
+        }
+
+        async function playSong(id, title, artist, img, artistId = "") {
             document.getElementById('player-bar').classList.remove('hidden');
+            currentArtistId = artistId;
+            
+            // Set UI Mini Player
             document.getElementById('player-title').innerText = title;
             document.getElementById('player-artist').innerText = artist;
             document.getElementById('player-img').src = img;
+
+            // Set UI Full Player
+            document.getElementById('fp-title').innerText = title;
+            document.getElementById('fp-artist').innerText = artist;
+            document.getElementById('fp-img').src = img;
             
             updatePlayerIcon('loading');
+            loadLyrics(id);
 
             try {
-                // Call the stream API you created in your worker
                 const res = await fetch(`${WORKER_URL}/api/stream?id=${id}`);
                 const data = await res.json();
 
                 if (data.url) {
                     audio.src = data.url;
-                    audio.play().catch(e => { 
-                        console.log("Auto-play blocked", e); 
-                        updatePlayerIcon('play'); 
-                    });
+                    audio.play().catch(e => { updatePlayerIcon('play'); });
                     
-                    // Save to Database (note: changed stream_id to id to match your worker logic)
                     fetch(`${WORKER_URL}/api/db/play`, {
                         method: 'POST',
                         headers: {'Content-Type': 'application/json'},
-                        body: JSON.stringify({ title, artist, thumbnail: img, id: id })
+                        body: JSON.stringify({ title, artist, thumbnail: img, id: id, artistId: artistId })
                     });
                 } else {
-                    throw new Error("No URL returned");
+                    throw new Error("No stream URL");
                 }
             } catch(e) { 
-                console.error("Stream extraction failed", e); 
-                alert("Could not load audio stream. The server might be rate-limited.");
+                alert("Audio stream unavailable right now.");
                 updatePlayerIcon('play');
             }
         }
@@ -296,6 +533,26 @@
         function togglePlay() {
             if (audio.paused) audio.play();
             else audio.pause();
+        }
+
+        function toggleFullPlayer() {
+            const fp = document.getElementById('full-player');
+            isFullPlayerOpen = !isFullPlayerOpen;
+            if(isFullPlayerOpen) {
+                fp.classList.remove('translate-y-full');
+            } else {
+                fp.classList.add('translate-y-full');
+            }
+        }
+
+        function seekAudio(e) {
+            const bar = e.currentTarget;
+            const clickX = e.clientX || e.touches?.[0]?.clientX;
+            const rect = bar.getBoundingClientRect();
+            const percent = (clickX - rect.left) / rect.width;
+            if(audio.duration) {
+                audio.currentTime = percent * audio.duration;
+            }
         }
 
         audio.addEventListener('play', () => updatePlayerIcon('pause'));
@@ -306,12 +563,16 @@
             if(audio.duration) {
                 const percent = (audio.currentTime / audio.duration) * 100;
                 document.getElementById('progress-bar').style.width = `${percent}%`;
+                document.getElementById('fp-progress').style.width = `${percent}%`;
+                document.getElementById('fp-time-current').innerText = formatTime(audio.currentTime);
+                document.getElementById('fp-time-total').innerText = formatTime(audio.duration);
             }
         });
 
         // Initialize App
         loadHomeData();
         loadDbStats();
+        nav('home');
     </script>
 </body>
 </html>
