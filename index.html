@@ -11,7 +11,7 @@
         tailwind.config = {
             theme: {
                 extend: {
-                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    fontFamily: { sans:['Inter', 'sans-serif'] },
                     colors: { appBase: '#000000', appAccent: '#3b82f6' }
                 }
             }
@@ -34,7 +34,8 @@
     <div class="fixed top-[-10%] left-[-10%] w-[50vw] h-[50vw] rounded-full bg-blue-900/20 blur-[120px] pointer-events-none z-0"></div>
     <div class="fixed top-[20%] right-[-10%] w-[40vw] h-[40vw] rounded-full bg-purple-900/10 blur-[100px] pointer-events-none z-0"></div>
 
-    <audio id="audio-element"></audio>
+    <!-- INVISIBLE YOUTUBE AUDIO ENGINE -->
+    <div id="yt-player-container" class="fixed top-0 left-0 w-1 h-1 opacity-0 pointer-events-none z-[-1]"></div>
 
     <div class="flex h-full w-full relative z-10 max-w-[1600px] mx-auto flex-1">
         <!-- DESKTOP SIDEBAR -->
@@ -65,7 +66,7 @@
             <div class="p-5 md:p-10">
                 <!-- HOME VIEW -->
                 <div id="view-home" class="view-section animate-fade-in">
-                    <h2 class="text-2xl md:text-3xl font-bold mb-6 tracking-tight text-white/90">Trending Releases</h2>
+                    <h2 class="text-2xl md:text-3xl font-bold mb-6 tracking-tight text-white/90">Global Top Hits</h2>
                     <div id="home-new-releases" class="flex gap-4 overflow-x-auto snap-x pb-6 -mx-5 px-5 md:mx-0 md:px-0 scroll-smooth">
                         <div class="text-zinc-500 animate-pulse">Loading amazing music...</div>
                     </div>
@@ -100,7 +101,7 @@
     <!-- FLOATING PLAYER -->
     <div id="player-bar" class="hidden fixed bottom-[88px] md:bottom-8 left-4 right-4 md:left-1/2 md:-translate-x-1/2 md:w-[600px] glass-panel rounded-2xl p-2 md:p-3 flex items-center justify-between shadow-2xl z-40 transition-all duration-300">
         <div class="flex items-center gap-3 overflow-hidden w-[60%] group">
-            <div class="relative w-12 h-12 md:w-14 md:h-14 shrink-0 rounded-lg overflow-hidden shadow-md">
+            <div class="relative w-12 h-12 md:w-14 md:h-14 shrink-0 rounded-lg overflow-hidden shadow-md bg-zinc-800">
                 <img id="player-img" src="" class="w-full h-full object-cover">
             </div>
             <div class="truncate">
@@ -140,12 +141,47 @@
         </div>
     </nav>
 
+    <!-- LOAD YOUTUBE IFRAME API -->
+    <script src="https://www.youtube.com/iframe_api"></script>
+
     <script>
         // REPLACE THIS WITH YOUR NEW WORKER URL
         const WORKER_URL = "https://vasya-music.kviappsgames.workers.dev";
         
-        const audio = document.getElementById('audio-element');
+        // --- YOUTUBE INVISIBLE PLAYER SETUP ---
+        let ytPlayer;
+        let isPlayerReady = false;
 
+        function onYouTubeIframeAPIReady() {
+            ytPlayer = new YT.Player('yt-player-container', {
+                height: '10', width: '10', videoId: '',
+                playerVars: { 'autoplay': 0, 'controls': 0, 'playsinline': 1 },
+                events: {
+                    'onReady': () => { isPlayerReady = true; },
+                    'onStateChange': onPlayerStateChange
+                }
+            });
+        }
+
+        function onPlayerStateChange(event) {
+            if (event.data === YT.PlayerState.PLAYING) updatePlayerIcon('pause');
+            else if (event.data === YT.PlayerState.PAUSED) updatePlayerIcon('play');
+            else if (event.data === YT.PlayerState.ENDED) updatePlayerIcon('play');
+        }
+
+        // --- PROGRESS BAR UPDATER ---
+        setInterval(() => {
+            if (isPlayerReady && ytPlayer && ytPlayer.getPlayerState() === YT.PlayerState.PLAYING) {
+                const current = ytPlayer.getCurrentTime();
+                const duration = ytPlayer.getDuration();
+                if (duration) {
+                    const percent = (current / duration) * 100;
+                    document.getElementById('progress-bar').style.width = `${percent}%`;
+                }
+            }
+        }, 1000);
+
+        // --- UI NAVIGATION ---
         function nav(viewId) {
             document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
             document.getElementById(`view-${viewId}`).classList.remove('hidden');
@@ -153,34 +189,16 @@
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        function decodeHTML(html) {
-            const txt = document.createElement("textarea");
-            txt.innerHTML = html;
-            return txt.value;
-        }
-
-        // Extracts exactly based on saavn.sumit.co structure
-        function extractSongData(item) {
-            const title = decodeHTML(item.name || "Unknown Track").replace(/'/g, "\\'");
-            const artistList = item.artists?.primary?.map(a => a.name).join(', ') || 'Unknown Artist';
-            const artist = decodeHTML(artistList).replace(/'/g, "\\'");
-            const img = item.image && item.image.length > 0 ? item.image[item.image.length - 1].url : 'https://placehold.co/500x500';
-            const streamUrl = item.downloadUrl && item.downloadUrl.length > 0 ? item.downloadUrl[item.downloadUrl.length - 1].url : null;
-            
-            return { id: item.id, title, artist, img, streamUrl };
-        }
-
+        // --- LOAD HOME (TRENDING GLOBAL MUSIC) ---
         async function loadHomeData() {
             try {
                 const res = await fetch(`${WORKER_URL}/api/home`);
                 const data = await res.json();
                 
-                if(data && data.success && data.data && data.data.results) {
-                    const html = data.data.results.map(item => {
-                        const s = extractSongData(item);
-                        return `
-                        <div class="snap-start shrink-0 w-40 md:w-56 group cursor-pointer" onclick="playSong('${s.id}', '${s.title}', '${s.artist}', '${s.img}', '${s.streamUrl}')">
-                            <div class="relative w-full aspect-square rounded-2xl overflow-hidden mb-3 shadow-2xl border border-white/5">
+                if(data.success && data.results) {
+                    const html = data.results.map(s => `
+                        <div class="snap-start shrink-0 w-40 md:w-56 group cursor-pointer" onclick="playSong('${s.id}', '${s.title.replace(/'/g, "\\'")}', '${s.artist.replace(/'/g, "\\'")}', '${s.img}')">
+                            <div class="relative w-full aspect-square rounded-2xl overflow-hidden mb-3 shadow-2xl border border-white/5 bg-zinc-800">
                                 <img src="${s.img}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
                                 <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
                                     <div class="w-12 h-12 bg-blue-500 text-white rounded-full flex items-center justify-center shadow-lg transform translate-y-4 group-hover:translate-y-0 transition-all">
@@ -190,16 +208,15 @@
                             </div>
                             <h3 class="font-bold text-sm md:text-base text-white truncate">${s.title}</h3>
                             <p class="text-xs md:text-sm text-zinc-400 font-medium truncate">${s.artist}</p>
-                        </div>`;
-                    }).join('');
+                        </div>`).join('');
                     document.getElementById('home-new-releases').innerHTML = html;
                 }
             } catch (e) {
-                console.error("Home Load Error:", e);
-                document.getElementById('home-new-releases').innerHTML = '<span class="text-red-400">Failed to load trending music. Check F12.</span>';
+                document.getElementById('home-new-releases').innerHTML = '<span class="text-red-400">Failed to load trending music.</span>';
             }
         }
 
+        // --- SEARCH LOGIC (OFFICIAL ITUNES DATA) ---
         const searchInput = document.getElementById('search-input');
         let searchTimeout;
 
@@ -217,13 +234,11 @@
                 const res = await fetch(`${WORKER_URL}/api/search?q=${encodeURIComponent(query)}`);
                 const data = await res.json();
                 
-                if (data && data.success && data.data && data.data.results && data.data.results.length > 0) {
-                    resultsDiv.innerHTML = data.data.results.map(item => {
-                        const s = extractSongData(item);
-                        return `
+                if (data.success && data.results && data.results.length > 0) {
+                    resultsDiv.innerHTML = data.results.map(s => `
                         <div class="flex items-center gap-4 bg-zinc-900/50 p-3 rounded-xl hover:bg-zinc-800 transition cursor-pointer border border-white/5" 
-                             onclick="playSong('${s.id}', '${s.title}', '${s.artist}', '${s.img}', '${s.streamUrl}')">
-                            <img src="${s.img}" class="w-14 h-14 rounded-lg object-cover shadow-md">
+                             onclick="playSong('${s.id}', '${s.title.replace(/'/g, "\\'")}', '${s.artist.replace(/'/g, "\\'")}', '${s.img}')">
+                            <img src="${s.img}" class="w-14 h-14 rounded-lg object-cover shadow-md bg-zinc-800">
                             <div class="flex-1 min-w-0">
                                 <h4 class="text-sm font-bold text-white truncate">${s.title}</h4>
                                 <p class="text-xs text-zinc-400 truncate">${s.artist}</p>
@@ -231,17 +246,16 @@
                             <div class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white shrink-0">
                                 <svg class="w-4 h-4 ml-0.5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
                             </div>
-                        </div>`;
-                    }).join('');
+                        </div>`).join('');
                 } else {
                     resultsDiv.innerHTML = '<div class="text-zinc-500 col-span-full">No songs found.</div>';
                 }
             } catch (err) {
-                console.error(err);
-                resultsDiv.innerHTML = '<div class="text-red-500 col-span-full">Search failed. API unreachable.</div>';
+                resultsDiv.innerHTML = '<div class="text-red-500 col-span-full">Search failed.</div>';
             }
         }
 
+        // --- DATABASE LOGIC ---
         async function loadDbStats() {
             try {
                 const res = await fetch(`${WORKER_URL}/api/db/stats`);
@@ -249,8 +263,8 @@
                 
                 const renderListItem = (item) => `
                     <div class="flex items-center gap-4 bg-zinc-900/50 p-3 rounded-xl hover:bg-zinc-800 transition cursor-pointer border border-white/5" 
-                         onclick="playSong('${item.stream_id}', '${item.title.replace(/'/g, "\\'")}', '${item.artist.replace(/'/g, "\\'")}', '${item.thumbnail}', null, true)">
-                        <img src="${item.thumbnail}" class="w-12 h-12 rounded-lg object-cover">
+                         onclick="playSong('${item.stream_id}', '${item.title.replace(/'/g, "\\'")}', '${item.artist.replace(/'/g, "\\'")}', '${item.thumbnail}')">
+                        <img src="${item.thumbnail}" class="w-12 h-12 rounded-lg object-cover bg-zinc-800">
                         <div class="flex-1 min-w-0">
                             <h4 class="text-sm font-bold text-white truncate">${item.title}</h4>
                             <p class="text-xs text-zinc-400 truncate">${item.artist}</p>
@@ -259,8 +273,8 @@
 
                 if(data.recent && data.recent.length > 0) {
                     document.getElementById('home-recent').innerHTML = data.recent.map(item => `
-                    <div class="group cursor-pointer" onclick="playSong('${item.stream_id}', '${item.title.replace(/'/g, "\\'")}', '${item.artist.replace(/'/g, "\\'")}', '${item.thumbnail}', null, true)">
-                        <div class="relative aspect-square rounded-xl overflow-hidden mb-3 border border-white/5">
+                    <div class="group cursor-pointer" onclick="playSong('${item.stream_id}', '${item.title.replace(/'/g, "\\'")}', '${item.artist.replace(/'/g, "\\'")}', '${item.thumbnail}')">
+                        <div class="relative aspect-square rounded-xl overflow-hidden mb-3 border border-white/5 bg-zinc-800">
                             <img src="${item.thumbnail}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
                             <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
                                 <div class="w-12 h-12 bg-white text-black rounded-full flex items-center justify-center shadow-lg">
@@ -286,60 +300,63 @@
             document.getElementById(`icon-${state}`).classList.remove('hidden');
         }
 
-        async function playSong(id, title, artist, img, directUrl = null, isDbPlay = false) {
+        // --- MASTER AUDIO PLAYBACK ---
+        async function playSong(id, title, artist, img) {
+            if (!isPlayerReady) return alert("Player is loading, please wait a second...");
+
+            // UI Bar Setup
             document.getElementById('player-bar').classList.remove('hidden');
             document.getElementById('player-title').innerText = title;
             document.getElementById('player-artist').innerText = artist;
             document.getElementById('player-img').src = img;
-            
+            document.getElementById('progress-bar').style.width = `0%`;
             updatePlayerIcon('loading');
             
-            let finalUrl = directUrl;
-
-            // Proxy lookup for DB clicks where the direct URL wasn't provided
-            if (isDbPlay || !finalUrl || finalUrl === 'null') {
-                try {
-                    const res = await fetch(`${WORKER_URL}/api/search?q=${encodeURIComponent(title + " " + artist)}`);
-                    const data = await res.json();
-                    if(data.success && data.data && data.data.results.length > 0) {
-                        const song = extractSongData(data.data.results[0]);
-                        finalUrl = song.streamUrl;
-                    }
-                } catch(e) { console.error("URL lookup failed", e); }
+            // Set iOS/Android Lock Screen Controls
+            if ('mediaSession' in navigator) {
+                navigator.mediaSession.metadata = new MediaMetadata({
+                    title: title, artist: artist,
+                    artwork:[{ src: img, sizes: '600x600', type: 'image/jpeg' }]
+                });
+                navigator.mediaSession.setActionHandler('play', () => togglePlay());
+                navigator.mediaSession.setActionHandler('pause', () => togglePlay());
             }
 
-            if (finalUrl) {
-                audio.src = finalUrl;
-                audio.play().catch(e => { alert("Playback blocked. Tap play."); updatePlayerIcon('play'); });
-                
-                fetch(`${WORKER_URL}/api/db/play`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ title, artist, thumbnail: img, stream_id: id })
-                });
-            } else {
-                alert("Failed to find stream for this track.");
+            try {
+                // Fetch the exact YouTube track using the real Apple Music Title & Artist
+                const res = await fetch(`${WORKER_URL}/api/yt-search?q=${encodeURIComponent(title + ' ' + artist)}`);
+                const data = await res.json();
+
+                if (data.success && data.videoId) {
+                    ytPlayer.loadVideoById(data.videoId); // This streams it instantly
+                    
+                    // Save to history asynchronously
+                    fetch(`${WORKER_URL}/api/db/play`, {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({ title, artist, thumbnail: img, stream_id: id })
+                    });
+                } else {
+                    alert("Stream not available for this track.");
+                    updatePlayerIcon('play');
+                }
+            } catch(e) {
+                alert("Network error fetching the stream.");
                 updatePlayerIcon('play');
             }
         }
 
         function togglePlay() {
-            if (audio.paused) audio.play();
-            else audio.pause();
+            if (!isPlayerReady || !ytPlayer) return;
+            const state = ytPlayer.getPlayerState();
+            if (state === YT.PlayerState.PLAYING) {
+                ytPlayer.pauseVideo();
+            } else {
+                ytPlayer.playVideo();
+            }
         }
 
-        audio.addEventListener('play', () => updatePlayerIcon('pause'));
-        audio.addEventListener('pause', () => updatePlayerIcon('play'));
-        audio.addEventListener('ended', () => updatePlayerIcon('play'));
-
-        audio.addEventListener('timeupdate', () => {
-            if(audio.duration) {
-                const percent = (audio.currentTime / audio.duration) * 100;
-                document.getElementById('progress-bar').style.width = `${percent}%`;
-            }
-        });
-
-        // Initialize App
+        // Init App Data
         loadHomeData();
         loadDbStats();
     </script>
